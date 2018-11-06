@@ -1,4 +1,4 @@
-INSERT INTO emp (pk_emp,name,email,create_date,update_date) VALUES (EMP_SEQ.nextval,'EVAN','EVAN@WEBCOMM.COM.TW',sysdate,sysdate ); 
+INSERT INTO emp (pk_emp,name,email,create_date,update_date) VALUES (EMP_SEQ.nextval,'evan','evan@webcomm.com.tw',sysdate,sysdate ); 
 INSERT INTO category (pk_category,description,create_date,update_date) VALUES (category_SEQ.nextval,'休假事項',sysdate,sysdate );
 INSERT INTO category (pk_category,description,create_date,update_date) VALUES (category_SEQ.nextval,'待辦事項',sysdate,sysdate ); 
 INSERT INTO category (pk_category,description,create_date,update_date) VALUES (category_SEQ.nextval,'三代會議',sysdate,sysdate ); 

@@ -1,6 +1,7 @@
 package com.webcomm.workitem.controller;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -49,6 +50,19 @@ public class WorkItemController {
 		List<Emp> empList = empService.findAll();
 		List<Category> categoryList = categoryService.findAllWithoutDayOff();
 		List<Item> itemList = itemService.findAll();
+		StringBuilder sb = new StringBuilder();
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.MILLISECOND, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		Date currentDate = calendar.getTime();
+
+		for (Item i : itemList) {
+			if (i.getCreateDate().after(currentDate) || i.getCreateDate().equals(currentDate)) {
+				sb.append(i.getEmp().getName()).append("@").append(i.getCategory().getDescription()).append(" - ").append(i.getContent()).append("@").append(i.getWorkTime()).append("\n");
+			}
+		}
 
 		Date lastDate = itemService.getLastDate();
 		Date startDate = itemService.getStartDate();
@@ -62,6 +76,7 @@ public class WorkItemController {
 		model.addAttribute("itemList", itemList);
 		model.addAttribute("lastDate", lastDate);
 		model.addAttribute("hourLeft", hourLeft);
+		model.addAttribute("copyString", sb.toString());
 		return "item_list";
 	}
 
@@ -135,8 +150,7 @@ public class WorkItemController {
 	@GetMapping("/categoryList")
 	public String goCategoryList(@ModelAttribute Category category, Model model) {
 		System.out.println("*****into categoryList*****");
-		List<Category> categoryList = categoryService.findAll();
-//		model.addAttribute("category", new Category());
+		List<Category> categoryList = categoryService.findAllWithoutDayOff();
 		model.addAttribute("categoryList", categoryList);
 		return "category_list";
 	}

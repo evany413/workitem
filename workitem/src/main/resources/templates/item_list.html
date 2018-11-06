@@ -81,6 +81,24 @@
 		editRow.find(".itemEditView").hide();
 		editRow.find(".itemListView").show();
 	}
+
+	function copyToClipboard(containerid) {
+		// Create a new textarea element and give it id='temp_element'
+		var textarea = document.createElement('textarea')
+		textarea.id = 'temp_element'
+		// Optional step to make less noise on the page, if any!
+		textarea.style.height = 0
+		// Now append it to your page somewhere, I chose <body>
+		document.body.appendChild(textarea)
+		// Give our textarea a value of whatever inside the div of id=containerid
+		textarea.value = document.getElementById(containerid).innerText
+		// Now copy whatever inside the textarea to clipboard
+		var selector = document.querySelector('#temp_element')
+		selector.select()
+		document.execCommand('copy')
+		// Remove the textarea
+		document.body.removeChild(textarea)
+	}
 </script>
 </head>
 <body>
@@ -137,6 +155,14 @@
 									<button type="reset" class="btn btn-default">重設</button>
 								</div>
 							</div>
+							<div class="row">
+								<div style="white-space: pre;" id="copyArea" class="form-group col-lg-10" th:text="${copyString}"></div>
+								<div class="form-group col-lg-2 text-right">
+									<button class="btn" type="button" onclick="copyToClipboard('copyArea')">
+										<i class="fa fa-copy" style="color: grey"></i>
+									</button>
+								</div>
+							</div>
 							<br>
 							<ul th:if="${not #lists.isEmpty(errorMsg)}">
 								<li style="color: red" th:each="err:${errorMsg}" th:text="${err}">Input is incorrect</li>
@@ -165,29 +191,20 @@
 									<td class="itemListView" th:text="${item.category.description}"></td>
 									<td class="itemListView" th:text="${item.content}">...</td>
 									<td class="itemListView" th:text="${item.workTime}"></td>
-									<td class="itemEditView" style="display: none">
-										<select class="form-control" name="emp">
+									<td class="itemEditView" style="display: none"><select class="form-control" name="emp">
 											<th:block th:each="emp:${empList}">
 												<option th:value="${emp.pkEmp}" th:text="${emp.name}"></option>
 											</th:block>
-										</select>
-									</td>
-									<td class="itemEditView" style="display: none">
-										<select class="form-control" name="category">
+									</select></td>
+									<td class="itemEditView" style="display: none"><select class="form-control" name="category">
 											<th:block th:each="category:${categoryList}">
 												<option th:value="${category.pkCategory}" th:text="${category.description}">...</option>
 											</th:block>
-										</select>
-									</td>
-									<td class="itemEditView" style="display: none">
-										<input name="content" th:value="${item.content}">
-									</td>
-									<td class="itemEditView" style="display: none">
-										<input name="workTime" th:value="${item.workTime}">
-									</td>
+									</select></td>
+									<td class="itemEditView" style="display: none"><input name="content" th:value="${item.content}"></td>
+									<td class="itemEditView" style="display: none"><input name="workTime" th:value="${item.workTime}"></td>
 									<td th:text="${#dates.format(item.createDate, 'yyyy-MM-dd')}"></td>
-									<td>
-										<input name="pkItem" th:value="${item.pkItem}" style="display: none" readonly>
+									<td><input name="pkItem" th:value="${item.pkItem}" style="display: none" readonly>
 										<button class="itemListView" type="button" onclick="showItemEditView(this)">
 											<i class="fa fa-edit"></i>
 										</button>
@@ -199,8 +216,7 @@
 										</button>
 										<button class="itemEditView" type="button" onclick="cancelItemEdit(this)" style="display: none">
 											<i class="fa fa-times-circle" style="color: red"></i>
-										</button>
-									</td>
+										</button></td>
 								</tr>
 							</th:block>
 						</tbody>
