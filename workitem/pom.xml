@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.webcomm.workitem</groupId>
 	<artifactId>demo</artifactId>
@@ -50,8 +52,8 @@
 			<groupId>com.oracle</groupId>
 			<artifactId>ojdbc6</artifactId>
 			<version>11.1.0.7</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/ojdbc6.jar</systemPath>
+			<!-- <scope>system</scope> -->
+			<!-- <systemPath>${basedir}/lib/ojdbc6.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -68,12 +70,21 @@
 			<artifactId>momentjs</artifactId>
 			<version>2.18.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.17</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<argLine>-Dfile.encoding=UTF8</argLine>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

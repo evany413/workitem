@@ -1,12 +1,17 @@
 package com.webcomm.workitem.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,15 +21,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.WebUtils;
 
 import com.webcomm.workitem.model.Category;
-import com.webcomm.workitem.model.Emp;
 import com.webcomm.workitem.model.Item;
+import com.webcomm.workitem.model.PccDeveloper;
 import com.webcomm.workitem.service.CategoryService;
-import com.webcomm.workitem.service.EmpService;
 import com.webcomm.workitem.service.ItemService;
+import com.webcomm.workitem.service.PccDeveloperService;
 import com.webcomm.workitem.service.ScheduleService;
+import com.webcomm.workitem.util.ExcelExpoter;
 
 @Controller
 public class WorkItemController {
@@ -32,7 +40,7 @@ public class WorkItemController {
 	List<String> testlist = new ArrayList<String>();
 
 	@Autowired
-	EmpService empService;
+	PccDeveloperService pccDeveloperService;
 
 	@Autowired
 	CategoryService categoryService;
@@ -43,13 +51,40 @@ public class WorkItemController {
 	@Autowired
 	ScheduleService scheduleService;
 
+	@Autowired
+	ExcelExpoter excelExpoter;
+
+	@Autowired
+	private HttpServletRequest request;
+
+	@Autowired
+	private HttpServletResponse response;
+
 	/* 首頁 - WorkItems清單 */
 	@GetMapping("/")
 	public String goIndex(@ModelAttribute Item item, Model model) {
 		System.out.println("*****into homepage*****");
-		List<Emp> empList = empService.findAll();
+		List<PccDeveloper> pccDeveloperList = pccDeveloperService.findAll();
 		List<Category> categoryList = categoryService.findAllWithoutDayOff();
-		List<Item> itemList = itemService.findAll();
+
+		// 取得cookie中所存的userId(為預設顯示的user)
+		Cookie cookie = WebUtils.getCookie(request, "userId");
+		
+		if (null == cookie) {
+			if(pccDeveloperList.size()>0) {
+				cookie = new Cookie("userId", Long.toString(pccDeveloperList.get(0).getPkPccDeveloper())); // 以pccDeveloperList中第一個的pk做為預設值
+			}else {
+				cookie = new Cookie("userId", "1"); // 若list無值
+			}
+			response.addCookie(cookie);
+		}
+
+		Long userId = Long.parseLong(cookie.getValue());
+		PccDeveloper selectedPccDeveloper = pccDeveloperService.getOne(userId);
+
+		// 取出該user的work item
+		List<Item> itemList = itemService.findAllByPccDeveloperWithOutDayOff(selectedPccDeveloper);
+
 		StringBuilder sb = new StringBuilder();
 
 		Calendar calendar = Calendar.getInstance();
@@ -60,18 +95,19 @@ public class WorkItemController {
 
 		for (Item i : itemList) {
 			if (i.getCreateDate().after(currentDate) || i.getCreateDate().equals(currentDate)) {
-				sb.append(i.getEmp().getName()).append("@").append(i.getCategory().getDescription()).append(" - ").append(i.getContent()).append("@").append(i.getWorkTime()).append("\n");
+				sb.append(i.getPccDeveloper().getName()).append("@").append(i.getCategory().getDescription()).append(" - ").append(i.getContent()).append("@").append(i.getWorkTime()).append("\n");
 			}
 		}
 
-		Date lastDate = itemService.getLastDate();
-		Date startDate = itemService.getStartDate();
+		Date startDate = itemService.getStartDateByPccDeveloper(selectedPccDeveloper);
+		Date lastDate = itemService.getLastDateByPccDeveloper(selectedPccDeveloper);
 		Integer workHours = scheduleService.getWorkDayCount(startDate, new Date()) * 8; // from first workitem date till now
-		Integer hoursFinish = itemService.getWorkHours();
+		Integer hoursFinish = itemService.getPccDeveloperWorkHours(selectedPccDeveloper);
 
 		Integer hourLeft = workHours - hoursFinish; // 所有工作天時數 - WI完成時數
 
-		model.addAttribute("empList", empList);
+		model.addAttribute("selectedPccDeveloper", selectedPccDeveloper);
+		model.addAttribute("pccDeveloperList", pccDeveloperList);
 		model.addAttribute("categoryList", categoryList);
 		model.addAttribute("itemList", itemList);
 		model.addAttribute("lastDate", lastDate);
@@ -121,29 +157,28 @@ public class WorkItemController {
 	}
 
 	/* 使用者清單 */
-	@GetMapping("/empList")
-	public String goEmpList(@ModelAttribute Emp emp, Model model) {
-		System.out.println("*****into empList*****");
-		List<Emp> empList = empService.findAll();
-//		model.addAttribute("emp", new Emp());
-		model.addAttribute("empList", empList);
-		return "emp_list";
+	@GetMapping("/pccDeveloperList")
+	public String goPccDeveloperList(@ModelAttribute PccDeveloper pccDeveloper, Model model) {
+		System.out.println("*****into pccDeveloperList*****");
+		List<PccDeveloper> pccDeveloperList = pccDeveloperService.findAll();
+		model.addAttribute("pccDeveloperList", pccDeveloperList);
+		return "pccDeveloper_list";
 	}
 
 	/* 新增使用者 */
-	@GetMapping("/addEmp")
-	public String addEmp(@Valid @ModelAttribute Emp emp, BindingResult bindingResult, Model model) {
-		System.out.println("*****into addEmp*****");
+	@GetMapping("/addPccDeveloper")
+	public String addPccDeveloper(@Valid @ModelAttribute PccDeveloper pccDeveloper, BindingResult bindingResult, Model model) {
+		System.out.println("*****into addPccDeveloper*****");
 		List<String> errorMsg = new ArrayList<String>();
 		if (bindingResult.hasErrors()) {
 			for (FieldError f : bindingResult.getFieldErrors()) {
 				errorMsg.add(f.getDefaultMessage());
 			}
 			model.addAttribute("errorMsg", errorMsg);
-			return goEmpList(emp, model);
+			return goPccDeveloperList(pccDeveloper, model);
 		}
-		empService.addOne(emp);
-		return "redirect:/empList";
+		pccDeveloperService.addOne(pccDeveloper);
+		return "redirect:/pccDeveloperList";
 	}
 
 	/* 工作類別清單 */
@@ -210,8 +245,8 @@ public class WorkItemController {
 	}
 
 	/* 更新使用者 */
-	@PostMapping("/updateEmp")
-	public String updateEmp(@Valid Emp emp, BindingResult bindingResult, @RequestParam(value = "pkEmp") Long pkEmp, Model model) {
+	@PostMapping("/updatePccDeveloper")
+	public String updatePccDeveloper(@Valid PccDeveloper pccDeveloper, BindingResult bindingResult, @RequestParam(value = "pkPccDeveloper") Long pkPccDeveloper, Model model) {
 		System.out.println("*****into updateCategory*****");
 		List<String> errorMsg = new ArrayList<String>();
 		if (bindingResult.hasErrors()) {
@@ -220,12 +255,12 @@ public class WorkItemController {
 				errorMsg.add(f.getDefaultMessage());
 			}
 			model.addAttribute("errorMsg", errorMsg);
-			return goEmpList(new Emp(), model);
+			return goPccDeveloperList(new PccDeveloper(), model);
 		}
-		Emp updateEmp = empService.getOne(pkEmp);
-		BeanUtils.copyProperties(emp, updateEmp);
-		empService.update(updateEmp);
-		return "redirect:/empList";
+		PccDeveloper updatePccDeveloper = pccDeveloperService.getOne(pkPccDeveloper);
+		BeanUtils.copyProperties(pccDeveloper, updatePccDeveloper);
+		pccDeveloperService.update(updatePccDeveloper);
+		return "redirect:/pccDeveloperList";
 	}
 
 	/* 刪除工作項目 */
@@ -243,38 +278,25 @@ public class WorkItemController {
 	}
 
 	/* 刪除使用者 */
-	@PostMapping("/deleteEmp")
-	public String deleteEmp(@ModelAttribute Emp emp, Model model) {
-		empService.delete(emp);
-		return "redirect:/empList";
+	@PostMapping("/deletePccDeveloper")
+	public String deletePccDeveloper(@ModelAttribute PccDeveloper pccDeveloper, Model model) {
+		pccDeveloperService.delete(pccDeveloper);
+		return "redirect:/pccDeveloperList";
 	}
 
-//	@GetMapping("/test")
-//	public String testEmp(@ModelAttribute Emp emp) {
-//		System.out.println("*****into test*****");
-//		System.out.println(emp.getPkEmp());
-//		return "test";
-//	}
-//
-//	@RequestMapping("/addTest")
-//	public String addTestEmp(@ModelAttribute Emp emp) {
-//		System.out.println("*****into addTest*****");
-//		System.out.println(emp.getPkEmp());
-//		return "test";
-//	}
-//
-//	@GetMapping("/test2")
-//	public String testEmp2(@ModelAttribute Emp2 emp2) {
-//		System.out.println("*****into test2*****");
-//		System.out.println(emp2.getPkEmp2());
-//		return "test2";
-//	}
-//
-//	@RequestMapping("/addTest2")
-//	public String addTestEmp2(@ModelAttribute Emp2 emp2) {
-//		System.out.println("*****into addTest2*****");
-//		System.out.println(emp2.getPkEmp2());
-//		return "test2";
-//	}
+	/* 下載檔案 */
+	@RequestMapping("/downLoadFile")
+	public void downloadFile(HttpServletResponse response) {
+		String filename = "workitem.xls";
+		try {
+			HSSFWorkbook wb = excelExpoter.exportXLS();
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType("application/octet-stream");
+			response.setHeader("Content-disposition", "attachment; filename=" + new String(filename.getBytes("utf-8"), "ISO8859-1"));
+			wb.write(response.getOutputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 }

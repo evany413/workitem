@@ -5,9 +5,12 @@ server:
 spring:
   datasource:
     driver-class-name: oracle.jdbc.driver.OracleDriver
-    password: 123
-    url: jdbc:oracle:thin:@localhost:1521:xe
-    username: evan
+    #password: 123
+    password: passw0rd
+    #url: jdbc:oracle:thin:@localhost:1521:xe
+    url: jdbc:oracle:thin:@192.135.8.190:1521:topsd
+    #username: evan
+    username: geps
     #schema: classpath:schema.sql
     #data: classpath:data.sql
   http:
@@ -26,17 +29,14 @@ spring:
     static-locations: classpath:/static/
   jpa:
     show-sql: true
-    hibernate:
-      ddl-auto: create-drop
+#    hibernate:
+#      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.Oracle10gDialect
+        default_schema: geps
 logging:
   level:
     org:
       hibernate:
         SQL: DEBUG
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE

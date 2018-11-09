@@ -20,6 +20,7 @@
 <script th:src="@{/vendor/datatables-plugins/dataTables.bootstrap.min.js}"></script>
 <script th:src="@{/vendor/datatables-responsive/dataTables.responsive.js}"></script>
 <script th:src="@{/dist/js/sb-admin-2.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
 <script>
 	$(document).ready(function() {
 		$('#dataTables-example').DataTable({
@@ -31,6 +32,11 @@
 			var form = $("#workitemForm")[0];
 			form.action = "/insertDayOff";
 			form.submit();
+		});
+
+		$("#setUserBtn").on("click", function() {
+			var selectedUserId = $("#pccDeveloper").val();
+			Cookies.set('userId', selectedUserId);
 		});
 	});
 
@@ -59,8 +65,8 @@
 		var editRow = $(e).parent().parent();
 		// pkItem
 		var pkItem = editRow.find("input[name='pkItem']").val();
-		//emp
-		var empVal = editRow.find("select[name='emp']").val();
+		//pccDeveloper
+		var pccDeveloperVal = editRow.find("select[name='pccDeveloper']").val();
 		//category
 		var categoryVal = editRow.find("select[name='category']").val();
 		//content
@@ -69,7 +75,7 @@
 		var workTimeVal = editRow.find("input[name='workTime']").val();
 		var editForm = document.forms["editWorkitemForm"];
 		editForm['pkItem'].value = pkItem;
-		editForm['emp'].value = empVal;
+		editForm['pccDeveloper'].value = pccDeveloperVal;
 		editForm['category'].value = categoryVal;
 		editForm['content'].value = contentVal;
 		editForm['workTime'].value = workTimeVal;
@@ -83,7 +89,7 @@
 	}
 
 	function copyToClipboard(containerid) {
-		// Create a new textarea element and give it id='temp_element'
+		// Create a new textarea element and give it id='tempDeveloper_element'
 		var textarea = document.createElement('textarea')
 		textarea.id = 'temp_element'
 		// Optional step to make less noise on the page, if any!
@@ -98,6 +104,10 @@
 		document.execCommand('copy')
 		// Remove the textarea
 		document.body.removeChild(textarea)
+	}
+
+	function downloadFile() {
+		window.location.href = "/downLoadFile";
 	}
 </script>
 </head>
@@ -122,10 +132,8 @@
 						<form role="form" id="workitemForm" th:action="@{/addWorkItems}" th:object="${item}" method="post">
 							<div class="row">
 								<div class="form-group col-lg-2">
-									<select class="form-control" th:field="*{emp}">
-										<th:block th:each="emp:${empList}">
-											<option th:value="${emp.pkEmp}" th:text="${emp.name}">...</option>
-										</th:block>
+									<select class="form-control" id="pccDeveloper" name="pccDeveloper">
+										<option th:each="pccDeveloper:${pccDeveloperList}" th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}" th:selected="(${pccDeveloper}==${selectedPccDeveloper})">...</option>
 									</select>
 								</div>
 								<div class="form-group col-lg-2">
@@ -139,17 +147,15 @@
 									<input class="form-control" th:field="*{content}" placeholder="請輸入工作內容">
 								</div>
 								<div class="form-group input-group col-lg-1">
-									<span class="input-group-addon">@</span>
-									<input class="form-control" th:field="*{workTime}">
+									<span class="input-group-addon">@</span> <input class="form-control" th:field="*{workTime}">
 								</div>
 							</div>
 							<div class="row">
-								<div class="form-group col-lg-9">
-									上次開工作項目的時間是：<span th:text="${#dates.format(lastDate, 'yyyy-MM-dd')}"></span> 今天是：<span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></span>
-									<br>
-									還剩下<span style="color: red" th:text="${hourLeft}"></span>個小時要填 <span style="color: green; font-size: 9px">&nbsp;&nbsp;*如有休假只需填入時數即可</span>
+								<div class="form-group col-lg-8">
+									上次開工作項目的時間是：<span th:text="${#dates.format(lastDate, 'yyyy-MM-dd')}"></span> 今天是：<span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></span> <br> 還剩下<span style="color: red" th:text="${hourLeft}"></span>個小時要填 <span style="color: green; font-size: 9px">&nbsp;&nbsp;*如有休假只需填入時數即可</span>
 								</div>
-								<div class="form-group col-lg-3 text-right">
+								<div class="form-group col-lg-4 text-right">
+									<button type="button" id="setUserBtn" class="btn btn-info">設定使用者</button>
 									<button type="button" id="dayOffBtn" class="btn btn-success">休假</button>
 									<button type="submit" class="btn btn-default">送出</button>
 									<button type="reset" class="btn btn-default">重設</button>
@@ -160,6 +166,9 @@
 								<div class="form-group col-lg-2 text-right">
 									<button class="btn" type="button" onclick="copyToClipboard('copyArea')">
 										<i class="fa fa-copy" style="color: grey"></i>
+									</button>
+									<button class="btn" type="button" onclick="downloadFile()">
+										<i class="fa fa-download" style="color: grey"></i>
 									</button>
 								</div>
 							</div>
@@ -187,13 +196,13 @@
 						<tbody>
 							<th:block th:each="item,itemStat:${itemList}">
 								<tr>
-									<td class="itemListView" th:text="${item.emp.name}"></td>
+									<td class="itemListView" th:text="${item.pccDeveloper.name}"></td>
 									<td class="itemListView" th:text="${item.category.description}"></td>
 									<td class="itemListView" th:text="${item.content}">...</td>
 									<td class="itemListView" th:text="${item.workTime}"></td>
-									<td class="itemEditView" style="display: none"><select class="form-control" name="emp">
-											<th:block th:each="emp:${empList}">
-												<option th:value="${emp.pkEmp}" th:text="${emp.name}"></option>
+									<td class="itemEditView" style="display: none"><select class="form-control" name="pccDeveloper">
+											<th:block th:each="pccDeveloper:${pccDeveloperList}">
+												<option th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}"></option>
 											</th:block>
 									</select></td>
 									<td class="itemEditView" style="display: none"><select class="form-control" name="category">
@@ -223,11 +232,7 @@
 						<!-- /.table-responsive -->
 					</table>
 					<form id="editWorkitemForm" th:action="@{/updateItem}" method="post" style="display: none">
-						<input name="pkItem">
-						<input name="emp">
-						<input name="category">
-						<input name="content">
-						<input name="workTime">
+						<input name="pkItem"> <input name="pccDeveloper"> <input name="category"> <input name="content"> <input name="workTime">
 					</form>
 					<!-- /.col-lg-12 -->
 				</div>

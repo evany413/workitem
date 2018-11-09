@@ -41,9 +41,9 @@ public class Item implements Serializable {
 
 	/* 使用者 */
 	@NotNull(message = "請選擇使用者")
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "FK_EMP")
-	private Emp emp;
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinColumn(name = "FK_PCC_DEVELOPER")
+	private PccDeveloper pccDeveloper;
 
 	/* 工作內容 */
 	@NotEmpty(message = "工作內容不可為空")
@@ -82,12 +82,12 @@ public class Item implements Serializable {
 		this.category = category;
 	}
 
-	public Emp getEmp() {
-		return emp;
+	public PccDeveloper getPccDeveloper() {
+		return pccDeveloper;
 	}
 
-	public void setEmp(Emp emp) {
-		this.emp = emp;
+	public void setPccDeveloper(PccDeveloper pccDeveloper) {
+		this.pccDeveloper = pccDeveloper;
 	}
 
 	public String getContent() {

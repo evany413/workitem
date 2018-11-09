@@ -20,14 +20,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.validator.constraints.Length;
 
 @Entity
-@Table(name = "EMP")
-public class Emp implements Serializable {
+@Table(name = "PCC_DEVELOPER")
+public class PccDeveloper implements Serializable {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "empSeq")
-	@SequenceGenerator(name = "empSeq", sequenceName = "EMP_SEQ")
-	@Column(name = "PK_EMP", length = 20)
-	private Long pkEmp;
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pccDeveloperSeq")
+	@SequenceGenerator(name = "pccDeveloperSeq", sequenceName = "PCC_DEVELOPER_SEQ")
+	@Column(name = "PK_PCC_DEVELOPER", length = 20)
+	private Long pkPccDeveloper;
 
 	/* 使用者名稱 */
 	@NotEmpty(message = "名稱不能為空")
@@ -43,7 +43,7 @@ public class Emp implements Serializable {
 
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "CREATE_DATE", updatable=false)
+	@Column(name = "CREATE_DATE", updatable = false)
 	private Date createDate;
 
 	@UpdateTimestamp
@@ -51,12 +51,12 @@ public class Emp implements Serializable {
 	@Column(name = "UPDATE_DATE")
 	private Date updateDate;
 
-	public Long getPkEmp() {
-		return pkEmp;
+	public Long getPkPccDeveloper() {
+		return pkPccDeveloper;
 	}
 
-	public void setPkEmp(Long pkEmp) {
-		this.pkEmp = pkEmp;
+	public void setPkPccDeveloper(Long pkPccDeveloper) {
+		this.pkPccDeveloper = pkPccDeveloper;
 	}
 
 	public String getName() {

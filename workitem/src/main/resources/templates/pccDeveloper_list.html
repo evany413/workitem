@@ -26,6 +26,49 @@
 			responsive : true
 		});
 	});
+
+	function showPccDeveloperEditView(e) {
+		console.log("aa");
+		$(".pccDeveloperEditView").hide();
+		$(".pccDeveloperListView").show();
+		var editRow = $(e).parent().parent();
+		editRow.find(".pccDeveloperEditView").show();
+		editRow.find(".pccDeveloperListView").hide();
+	}
+
+	function deletePccDeveloper(e) {
+		$(e).prop('disabled', true);
+		var editRow = $(e).parent().parent();
+		var editForm = document.forms["editPccDeveloperForm"];
+		// pkPccDeveloper
+		var pkPccDeveloper = editRow.find("input[name='pkPccDeveloper']").val();
+		editForm.action = "/deletePccDeveloper";
+		editForm['pkPccDeveloper'].value = pkPccDeveloper;
+		editForm.submit();
+	}
+
+	function submitPccDeveloperEdit(e) {
+		$(e).prop('disabled', true);
+
+		var editRow = $(e).parent().parent();
+		// pkPccDeveloper
+		var pkPccDeveloper = editRow.find("input[name='pkPccDeveloper']").val();
+		//name
+		var nameVal = editRow.find("input[name='name']").val();
+		//email
+		var emailVal = editRow.find("input[name='email']").val();
+		var editForm = document.forms["editPccDeveloperForm"];
+		editForm['pkPccDeveloper'].value = pkPccDeveloper;
+		editForm['name'].value = nameVal;
+		editForm['email'].value = emailVal;
+		editForm.submit();
+	}
+
+	function cancelPccDeveloperEdit(e) {
+		var editRow = $(e).parent().parent();
+		editRow.find(".pccDeveloperEditView").hide();
+		editRow.find(".pccDeveloperListView").show();
+	}
 </script>
 </head>
 <body>
@@ -48,7 +91,7 @@
 					<!-- /.panel-heading -->
 					<div class="panel-body">
 						<div class="well">
-							<form role="form" th:action="@{/addEmp}" th:object="${emp}">
+							<form role="form" th:action="@{/addPccDeveloper}" th:object="${pccDeveloper}">
 								<div class="row">
 									<div class="form-group col-lg-4">
 										<input class="form-control" th:field="*{name}" placeholder="請輸入名字">
@@ -74,27 +117,51 @@
 									<th>名稱</th>
 									<th>Email</th>
 									<th>操作</th>
+									<th style="display: none"></th>
+									<th style="display: none"></th>
 								</tr>
 							</thead>
 							<tbody>
-								<th:block th:each="emp,empStat:${empList}">
+								<th:block th:each="pccDeveloper,pccDeveloperStat:${pccDeveloperList}">
 									<tr>
-										<td th:text="${empStat.index}+1"></td>
-										<td th:text="${emp.name}"></td>
-										<td th:text="${emp.email}">...</td>
+										<td th:text="${pccDeveloperStat.index}+1"></td>
+										<td class="pccDeveloperListView" th:text="${pccDeveloper.name}"></td>
+										<td class="pccDeveloperListView" th:text="${pccDeveloper.email}">...</td>
+										<td class="pccDeveloperEditView" style="display:none">
+											<input name="name" th:value="${pccDeveloper.name}">
+										</td>
+										<td class="pccDeveloperEditView" style="display:none">
+											<input name="email" th:value="${pccDeveloper.email}">
+										</td>
 										<td>
-											<i class="fa fa-edit"></i> <i class="fa fa-trash"></i>
+											<input name="pkPccDeveloper" th:value="${pccDeveloper.pkPccDeveloper}" style="display:none">
+											<button class="pccDeveloperListView" type="button" onclick="showPccDeveloperEditView(this)">
+												<i class="fa fa-edit"></i>
+											</button>
+											<button class="pccDeveloperListView" type="button" onclick="deletePccDeveloper(this)">
+												<i class="fa fa-trash"></i>
+											</button>
+											<button class="pccDeveloperEditView" type="button" onclick="submitPccDeveloperEdit(this)" style="display: none">
+												<i class="fa fa-check-circle" style="color: green"></i>
+											</button>
+											<button class="pccDeveloperEditView" type="button" onclick="cancelPccDeveloperEdit(this)" style="display: none">
+												<i class="fa fa-times-circle" style="color: red"></i>
+											</button>
 										</td>
 									</tr>
 								</th:block>
 							</tbody>
 						</table>
+						<form id="editPccDeveloperForm" th:action="@{/updatePccDeveloper}" method="post" style="display:none" >
+							<input name="pkPccDeveloper">
+							<input name="name">
+							<input name="email">
+						</form>
 						<!-- /.table-responsive -->
 					</div>
 					<!-- /.panel-body -->
 				</div>
 				<!-- page-wrapper-->
-				<!-- Page-Level Demo Scripts - Tables - Use for reference -->
 			</div>
 		</div>
 	</div>

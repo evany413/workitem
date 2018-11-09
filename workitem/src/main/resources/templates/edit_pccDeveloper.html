@@ -26,49 +26,6 @@
 			responsive : true
 		});
 	});
-
-	function showEmpEditView(e) {
-		console.log("aa");
-		$(".empEditView").hide();
-		$(".empListView").show();
-		var editRow = $(e).parent().parent();
-		editRow.find(".empEditView").show();
-		editRow.find(".empListView").hide();
-	}
-
-	function deleteEmp(e) {
-		$(e).prop('disabled', true);
-		var editRow = $(e).parent().parent();
-		var editForm = document.forms["editEmpForm"];
-		// pkEmp
-		var pkEmp = editRow.find("input[name='pkEmp']").val();
-		editForm.action = "/deleteEmp";
-		editForm['pkEmp'].value = pkEmp;
-		editForm.submit();
-	}
-
-	function submitEmpEdit(e) {
-		$(e).prop('disabled', true);
-
-		var editRow = $(e).parent().parent();
-		// pkEmp
-		var pkEmp = editRow.find("input[name='pkEmp']").val();
-		//name
-		var nameVal = editRow.find("input[name='name']").val();
-		//email
-		var emailVal = editRow.find("input[name='email']").val();
-		var editForm = document.forms["editEmpForm"];
-		editForm['pkEmp'].value = pkEmp;
-		editForm['name'].value = nameVal;
-		editForm['email'].value = emailVal;
-		editForm.submit();
-	}
-
-	function cancelEmpEdit(e) {
-		var editRow = $(e).parent().parent();
-		editRow.find(".empEditView").hide();
-		editRow.find(".empListView").show();
-	}
 </script>
 </head>
 <body>
@@ -91,7 +48,7 @@
 					<!-- /.panel-heading -->
 					<div class="panel-body">
 						<div class="well">
-							<form role="form" th:action="@{/addEmp}" th:object="${emp}">
+							<form role="form" th:action="@{/addPccDeveloper}" th:object="${pccDeveloper}">
 								<div class="row">
 									<div class="form-group col-lg-4">
 										<input class="form-control" th:field="*{name}" placeholder="請輸入名字">
@@ -117,51 +74,27 @@
 									<th>名稱</th>
 									<th>Email</th>
 									<th>操作</th>
-									<th style="display: none"></th>
-									<th style="display: none"></th>
 								</tr>
 							</thead>
 							<tbody>
-								<th:block th:each="emp,empStat:${empList}">
+								<th:block th:each="pccDeveloper,pccDeveloperStat:${pccDeveloperList}">
 									<tr>
-										<td th:text="${empStat.index}+1"></td>
-										<td class="empListView" th:text="${emp.name}"></td>
-										<td class="empListView" th:text="${emp.email}">...</td>
-										<td class="empEditView" style="display:none">
-											<input name="name" th:value="${emp.name}">
-										</td>
-										<td class="empEditView" style="display:none">
-											<input name="email" th:value="${emp.email}">
-										</td>
+										<td th:text="${pccDeveloperStat.index}+1"></td>
+										<td th:text="${pccDeveloper.name}"></td>
+										<td th:text="${pccDeveloper.email}">...</td>
 										<td>
-											<input name="pkEmp" th:value="${emp.pkEmp}" style="display:none">
-											<button class="empListView" type="button" onclick="showEmpEditView(this)">
-												<i class="fa fa-edit"></i>
-											</button>
-											<button class="empListView" type="button" onclick="deleteEmp(this)">
-												<i class="fa fa-trash"></i>
-											</button>
-											<button class="empEditView" type="button" onclick="submitEmpEdit(this)" style="display: none">
-												<i class="fa fa-check-circle" style="color: green"></i>
-											</button>
-											<button class="empEditView" type="button" onclick="cancelEmpEdit(this)" style="display: none">
-												<i class="fa fa-times-circle" style="color: red"></i>
-											</button>
+											<i class="fa fa-edit"></i> <i class="fa fa-trash"></i>
 										</td>
 									</tr>
 								</th:block>
 							</tbody>
 						</table>
-						<form id="editEmpForm" th:action="@{/updateEmp}" method="post" style="display:none" >
-							<input name="pkEmp">
-							<input name="name">
-							<input name="email">
-						</form>
 						<!-- /.table-responsive -->
 					</div>
 					<!-- /.panel-body -->
 				</div>
 				<!-- page-wrapper-->
+				<!-- Page-Level Demo Scripts - Tables - Use for reference -->
 			</div>
 		</div>
 	</div>

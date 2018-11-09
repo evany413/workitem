@@ -56,9 +56,9 @@
 						<form role="form" id="workitemForm" th:action="@{/addWorkItems}" th:object="${item}" method="post">
 							<div class="row">
 								<div class="form-group col-lg-2">
-									<select class="form-control" th:field="*{emp}">
-										<th:block th:each="emp:${empList}">
-											<option th:value="${emp.pkEmp}" th:text="${emp.name}">...</option>
+									<select class="form-control" th:field="*{pccDeveloper}">
+										<th:block th:each="pccDeveloper:${pccDeveloperList}">
+											<option th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}">...</option>
 										</th:block>
 									</select>
 								</div>
@@ -109,7 +109,7 @@
 							<th:block th:each="item,itemStat:${itemList}">
 								<!-- 										<tr th:text="${itemStat.index}%2==0?'even gradeC':'odd gradeX'"> -->
 								<tr>
-									<td th:text="${item.emp.name}"></td>
+									<td th:text="${item.pccDeveloper.name}"></td>
 									<td th:text="${item.category.description}"></td>
 									<td th:text="${item.content}">...</td>
 									<td th:text="${item.workTime}"></td>

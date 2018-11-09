@@ -7,5 +7,4 @@ public class StringUtil {
 			for (String appendStr : appendStrs)
 				sb.append(appendStr == null ? "" : appendStr);
 	}
-
 }
