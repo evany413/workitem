@@ -37,4 +37,6 @@ public interface ItemService {
 
 	public Integer getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper);
 
+	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper);
+
 }

@@ -130,4 +130,10 @@ public class ItemServiceImpl implements ItemService {
 		return total;
 	}
 
+	@Override
+	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper) {
+		List<Item> list = repo.findByPccDeveloperOrderByCreateDateDesc(selectedPccDeveloper);
+		return list;
+	}
+
 }

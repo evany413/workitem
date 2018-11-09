@@ -84,6 +84,7 @@ public class WorkItemController {
 
 		// 取出該user的work item
 		List<Item> itemList = itemService.findAllByPccDeveloperWithOutDayOff(selectedPccDeveloper);
+		List<Item> itemListWithDayOff = itemService.findAllByPccDeveloper(selectedPccDeveloper);
 
 		StringBuilder sb = new StringBuilder();
 
@@ -109,7 +110,7 @@ public class WorkItemController {
 		model.addAttribute("selectedPccDeveloper", selectedPccDeveloper);
 		model.addAttribute("pccDeveloperList", pccDeveloperList);
 		model.addAttribute("categoryList", categoryList);
-		model.addAttribute("itemList", itemList);
+		model.addAttribute("itemList", itemListWithDayOff);
 		model.addAttribute("lastDate", lastDate);
 		model.addAttribute("hourLeft", hourLeft);
 		model.addAttribute("copyString", sb.toString());
