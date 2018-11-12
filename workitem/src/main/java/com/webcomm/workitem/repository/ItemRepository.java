@@ -24,4 +24,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
 	public List<Item> findByPccDeveloper(PccDeveloper selectedPccDeveloper);
 
+	public List<Item> findByPccDeveloperAndCreateDateAfter(PccDeveloper selectedPccDeveloper, Date date);
+
 }

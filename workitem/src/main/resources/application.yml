@@ -1,16 +1,16 @@
 server:
-  port: 8081
+  port: 8082
   tomcat:
     uri-encoding: UTF-8
 spring:
   datasource:
     driver-class-name: oracle.jdbc.driver.OracleDriver
-    #password: 123
-    password: passw0rd
-    #url: jdbc:oracle:thin:@localhost:1521:xe
-    url: jdbc:oracle:thin:@192.135.8.190:1521:topsd
-    #username: evan
-    username: geps
+    #url: jdbc:oracle:thin:@192.135.8.190:1521:topsd
+    #username: geps
+    #password: passw0rd
+    url: jdbc:oracle:thin:@localhost:1521:xe
+    username: evan
+    password: 123
     #schema: classpath:schema.sql
     #data: classpath:data.sql
   http:
@@ -28,15 +28,16 @@ spring:
   resources:
     static-locations: classpath:/static/
   jpa:
-    show-sql: true
-#    hibernate:
+    show-sql: false
+    hibernate:
 #      ddl-auto: create
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.Oracle10gDialect
-        default_schema: geps
+        #default_schema: geps
 logging:
   level:
     org:
       hibernate:
-        SQL: DEBUG
+        SQL: ERROR

@@ -36,8 +36,8 @@ public class Item implements Serializable {
 
 	@NotNull(message = "請選擇類別")
 	@ManyToOne(cascade = { CascadeType.MERGE, CascadeType.REFRESH }, optional = false)
-	@JoinColumn(name = "FK_CATEGORY")
-	private Category category;
+	@JoinColumn(name = "FK_CATEGORY_DETAIL")
+	private CategoryDetail categoryDetail;
 
 	/* 使用者 */
 	@NotNull(message = "請選擇使用者")
@@ -74,12 +74,12 @@ public class Item implements Serializable {
 		this.pkItem = pkItem;
 	}
 
-	public Category getCategory() {
-		return category;
+	public CategoryDetail getCategoryDetail() {
+		return categoryDetail;
 	}
 
-	public void setCategory(Category category) {
-		this.category = category;
+	public void setCategoryDetail(CategoryDetail categoryDetail) {
+		this.categoryDetail = categoryDetail;
 	}
 
 	public PccDeveloper getPccDeveloper() {

@@ -80,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
 
 		for (Iterator<Item> iter = list.listIterator(); iter.hasNext();) {
 			Item i = iter.next();
-			if ("休假事項".equals(i.getCategory().getDescription())) {
+			if ("休假事項".equals(i.getCategoryDetail().getDescription())) {
 				iter.remove();
 			}
 		}
@@ -93,7 +93,7 @@ public class ItemServiceImpl implements ItemService {
 
 		for (Iterator<Item> iter = list.listIterator(); iter.hasNext();) {
 			Item i = iter.next();
-			if ("休假事項".equals(i.getCategory().getDescription())) {
+			if ("休假事項".equals(i.getCategoryDetail().getDescription())) {
 				iter.remove();
 			}
 		}
@@ -134,6 +134,16 @@ public class ItemServiceImpl implements ItemService {
 	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper) {
 		List<Item> list = repo.findByPccDeveloperOrderByCreateDateDesc(selectedPccDeveloper);
 		return list;
+	}
+
+	@Override
+	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date) {
+		Integer total = 0;
+		List<Item> list = repo.findByPccDeveloperAndCreateDateAfter(selectedPccDeveloper,date);
+		for (Item item : list) {
+			total += item.getWorkTime();
+		}
+		return total;
 	}
 
 }

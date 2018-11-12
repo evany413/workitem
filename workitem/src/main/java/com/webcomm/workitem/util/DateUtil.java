@@ -38,4 +38,51 @@ public class DateUtil {
 		sb.append(day);
 		return sb.toString();
 	}
+
+	/**
+	 * 取得昨日日期
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static Date getYesterday(Date date) {
+		Date d = getPureDate(date);
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(d);
+		cal.add(Calendar.DATE, -1);
+		return cal.getTime();
+	}
+
+	/**
+	 * 取得下一日日期
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static Date getNextDay(Date date) {
+		Date d = getPureDate(date);
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(d);
+		cal.add(Calendar.DATE, 1);
+		return cal.getTime();
+	}
+
+	/**
+	 * 取得日期(不含時分秒)
+	 * 
+	 * @param date
+	 * @return
+	 */
+	public static Date getPureDate(Date date) {
+		Date d = date;
+		if (null == d) {
+			d = new Date();
+		}
+		final Calendar cal = Calendar.getInstance();
+		cal.setTime(d);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		return cal.getTime();
+	}
 }

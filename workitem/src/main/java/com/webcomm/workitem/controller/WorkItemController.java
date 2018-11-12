@@ -26,12 +26,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.WebUtils;
 
 import com.webcomm.workitem.model.Category;
+import com.webcomm.workitem.model.CategoryDetail;
 import com.webcomm.workitem.model.Item;
 import com.webcomm.workitem.model.PccDeveloper;
+import com.webcomm.workitem.service.CategoryDetailService;
 import com.webcomm.workitem.service.CategoryService;
 import com.webcomm.workitem.service.ItemService;
 import com.webcomm.workitem.service.PccDeveloperService;
 import com.webcomm.workitem.service.ScheduleService;
+import com.webcomm.workitem.util.DateUtil;
 import com.webcomm.workitem.util.ExcelExpoter;
 
 @Controller
@@ -44,6 +47,9 @@ public class WorkItemController {
 
 	@Autowired
 	CategoryService categoryService;
+	
+	@Autowired
+	CategoryDetailService categoryDetailService;
 
 	@Autowired
 	ItemService itemService;
@@ -69,11 +75,11 @@ public class WorkItemController {
 
 		// 取得cookie中所存的userId(為預設顯示的user)
 		Cookie cookie = WebUtils.getCookie(request, "userId");
-		
+
 		if (null == cookie) {
-			if(pccDeveloperList.size()>0) {
+			if (pccDeveloperList.size() > 0) {
 				cookie = new Cookie("userId", Long.toString(pccDeveloperList.get(0).getPkPccDeveloper())); // 以pccDeveloperList中第一個的pk做為預設值
-			}else {
+			} else {
 				cookie = new Cookie("userId", "1"); // 若list無值
 			}
 			response.addCookie(cookie);
@@ -88,24 +94,25 @@ public class WorkItemController {
 
 		StringBuilder sb = new StringBuilder();
 
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(Calendar.MILLISECOND, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		Date currentDate = calendar.getTime();
-
+		Date currentDate = DateUtil.getPureDate(new Date()); // 今天日期(不含時分秒)
 		for (Item i : itemList) {
 			if (i.getCreateDate().after(currentDate) || i.getCreateDate().equals(currentDate)) {
-				sb.append(i.getPccDeveloper().getName()).append("@").append(i.getCategory().getDescription()).append(" - ").append(i.getContent()).append("@").append(i.getWorkTime()).append("\n");
+				sb.append(i.getPccDeveloper().getName()).append("@").append(i.getCategoryDetail().getCategory().getDescription()).append(" - ").append(i.getCategoryDetail().getDescription()).append(" - ").append(i.getContent()).append("@").append(i.getWorkTime()).append("\n");
 			}
 		}
 
 		Date startDate = itemService.getStartDateByPccDeveloper(selectedPccDeveloper);
 		Date lastDate = itemService.getLastDateByPccDeveloper(selectedPccDeveloper);
 		Integer workHours = scheduleService.getWorkDayCount(startDate, new Date()) * 8; // from first workitem date till now
-		Integer hoursFinish = itemService.getPccDeveloperWorkHours(selectedPccDeveloper);
+		Integer hoursFinish = itemService.getPccDeveloperWorkHoursAfter(selectedPccDeveloper, DateUtil.getNextDay(startDate));//第一次填的隔天起算
 
+		System.out.println(workHours);
+		System.out.println(hoursFinish);
+		
 		Integer hourLeft = workHours - hoursFinish; // 所有工作天時數 - WI完成時數
+		if (workHours == 0) {// 代表目前還沒填過WI
+			hourLeft = 0;
+		}
 
 		model.addAttribute("selectedPccDeveloper", selectedPccDeveloper);
 		model.addAttribute("pccDeveloperList", pccDeveloperList);
@@ -137,11 +144,11 @@ public class WorkItemController {
 	public String InsertDayOff(@Valid @ModelAttribute Item item, BindingResult bindingResult, Model model) {
 		System.out.println("*****into insertDayOff*****");
 		List<String> errorMsg = new ArrayList<String>();
-		Category dayOffCategory = categoryService.findDayOff();
+		CategoryDetail dayOffCategoryDetail = categoryDetailService.findDayOff();
 
 		Item insertItem = new Item();
 		BeanUtils.copyProperties(item, insertItem);// 建立一個插入的Item，泛回Item時仍然返回舊的。
-		insertItem.setCategory(dayOffCategory); // 分類 設為"休假事項"
+		insertItem.setCategoryDetail(dayOffCategoryDetail); // 分類 設為"休假事項"
 		insertItem.setContent("休假"); // 工作內容 設為"休假"
 
 		if (bindingResult.hasErrors()) {

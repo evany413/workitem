@@ -39,4 +39,6 @@ public interface ItemService {
 
 	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper);
 
+	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date);
+
 }
