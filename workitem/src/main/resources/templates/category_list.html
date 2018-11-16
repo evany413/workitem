@@ -22,11 +22,15 @@
 <script th:src="@{/dist/js/sb-admin-2.js}"></script>
 <script>
 	$(document).ready(function() {
-		$('#dataTables-example').DataTable({
+		$('#categoryDataTables').DataTable({
+			responsive : true,
+		});
+		$('#categoryDetailDataTables').DataTable({
 			responsive : true,
 		});
 	});
 
+	/*****category tr operation*****/
 	function showCategoryEditView(e) {
 		$(".categoryEditView").hide();
 		$(".categoryListView").show();
@@ -40,7 +44,7 @@
 		var editRow = $(e).parent().parent();
 		var editForm = document.forms["editCategoryForm"];
 		// pkCategory
-		var pkCategory = editRow.find("input[name='pkCategory']").val();
+		var pkCategory = editRow.find(".editPkCategory").val();
 		editForm.action = "/deleteCategory";
 		editForm['pkCategory'].value = pkCategory;
 		editForm.submit();
@@ -51,9 +55,9 @@
 
 		var editRow = $(e).parent().parent();
 		// pkCategory
-		var pkCategory = editRow.find("input[name='pkCategory']").val();
+		var pkCategory = editRow.find(".editPkCategory").val();
 		//description
-		var descriptionVal = editRow.find("input[name='description']").val();
+		var descriptionVal = editRow.find(".editDescription").val();
 		var editForm = document.forms["editCategoryForm"];
 		editForm['pkCategory'].value = pkCategory;
 		editForm['description'].value = descriptionVal;
@@ -65,6 +69,47 @@
 		editRow.find(".categoryEditView").hide();
 		editRow.find(".categoryListView").show();
 	}
+	/*****category tr operation end*****/
+	/*****categoryDetail tr operation*****/
+	function showCategoryDetailEditView(e) {
+		$(".categoryDetailEditView").hide();
+		$(".categoryDetailListView").show();
+		var editRow = $(e).parent().parent();
+		editRow.find(".categoryDetailEditView").show();
+		editRow.find(".categoryDetailListView").hide();
+	}
+
+	function deleteCategoryDetail(e) {
+		$(e).prop('disabled', true);
+		var editRow = $(e).parent().parent();
+		var editForm = document.forms["editCategoryDetailForm"];
+		// pkCategoryDetail
+		var pkCategoryDetail = editRow.find(".editPkCategoryDetail").val();
+		editForm.action = "/deleteCategoryDetail";
+		editForm['pkCategoryDetail'].value = pkCategoryDetail;
+		editForm.submit();
+	}
+
+	function submitCategoryDetailEdit(e) {
+		$(e).prop('disabled', true);
+
+		var editRow = $(e).parent().parent();
+		var pkCategoryDetailVal = editRow.find(".editPkCategoryDetail").val();
+		var pkCategoryVal = editRow.find(".editCategory").val();
+		var descriptionVal = editRow.find(".editDescription").val();
+		var editForm = document.forms["editCategoryDetailForm"];
+		editForm['pkCategoryDetail'].value = pkCategoryDetailVal;
+		editForm['category'].value = pkCategoryVal;
+		editForm['description'].value = descriptionVal;
+		editForm.submit();
+	}
+
+	function cancelCategoryDetailEdit(e) {
+		var editRow = $(e).parent().parent();
+		editRow.find(".categoryDetailEditView").hide();
+		editRow.find(".categoryDetailListView").show();
+	}
+	/*****categoryDetail tr operation end*****/
 </script>
 </head>
 <body>
@@ -100,12 +145,33 @@
 								</ul>
 							</div>
 						</form>
+						<form role="form" th:action="@{/addCategoryDetail}" th:object="${categoryDetail}">
+							<div class="row">
+								<div class="form-group col-lg-4">
+									<select class="form-control" th:field="*{category}">
+										<option th:each="category:${categoryList}" th:value="${category.pkCategory}" th:text="${category.description}"></option>
+									</select>
+								</div>
+								<div class="form-group col-lg-5">
+									<input class="form-control" th:field="*{description}" placeholder="請輸入欲新增的分類細項名稱">
+								</div>
+								<div class="form-group col-lg-3 text-right">
+									<button type="submit" class="btn btn-default">送出</button>
+									<button type="reset" class="btn btn-default">重設</button>
+								</div>
+								<br>
+								<ul th:if="${not #lists.isEmpty(errorMsg)}">
+									<li style="color: red" th:each="err:${errorMsg}" th:text="${err}">Input is incorrect</li>
+								</ul>
+							</div>
+						</form>
 					</div>
-					<table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+					<!-- 修改category -->
+					<table width="100%" class="table table-striped table-bordered table-hover" id="categoryDataTables">
 						<thead>
 							<tr>
 								<th>項次</th>
-								<th>分類內容</th>
+								<th>分類</th>
 								<th>操作</th>
 								<th style="display: none"></th>
 							</tr>
@@ -116,10 +182,10 @@
 									<td th:text="${categoryStat.index}+1"></td>
 									<td class="categoryListView" th:text="${category.description}"></td>
 									<td class="categoryEditView" style="display: none">
-										<input name="description" th:value="${category.description}">
+										<input class="editDescription" th:value="${category.description}">
 									</td>
 									<td>
-										<input name="pkCategory" th:value="${category.pkCategory}" style="display: none">
+										<input class="editPkCategory" th:value="${category.pkCategory}" style="display: none">
 										<button class="categoryListView" type="button" onclick="showCategoryEditView(this)">
 											<i class="fa fa-edit"></i>
 										</button>
@@ -137,9 +203,61 @@
 							</th:block>
 						</tbody>
 					</table>
-					<form id="editCategoryForm" th:action="@{/updateCategory}" method="post" style="display: none">
-						<input name="pkCategory">
-						<input name="description">
+					<!-- 修改categoryDetail -->
+					<table width="100%" class="table table-striped table-bordered table-hover" id="categoryDetailDataTables">
+						<thead>
+							<tr>
+								<th>項次</th>
+								<th>分類</th>
+								<th>分類細項內容</th>
+								<th>操作</th>
+								<th style="display: none"></th>
+								<th style="display: none"></th>
+							</tr>
+						</thead>
+						<tbody>
+							<th:block th:each="categoryDetail,categoryDetailStat:${categoryDetailList}">
+								<tr>
+									<td th:text="${categoryDetailStat.index}+1"></td>
+									<td class="categoryDetailListView" th:text="${categoryDetail.category.description}"></td>
+									<td class="categoryDetailListView" th:text="${categoryDetail.description}"></td>
+									<td class="categoryDetailEditView" style="display: none">
+										<select class="editCategory">
+											<option th:each="category:${categoryList}" th:value="${category.pkCategory}" th:text="${category.description}" th:selected="${category}==${categoryDetail.category}">
+										</select>
+									</td>
+									<td class="categoryDetailEditView" style="display: none">
+										<input class="editDescription" th:value="${categoryDetail.description}">
+									</td>
+									<td>
+										<input class="editPkCategoryDetail" th:value="${categoryDetail.pkCategoryDetail}" style="display: none">
+										<button class="categoryDetailListView" type="button" onclick="showCategoryDetailEditView(this)">
+											<i class="fa fa-edit"></i>
+										</button>
+										<button class="categoryDetailListView" type="button" onclick="deleteCategoryDetail(this)">
+											<i class="fa fa-trash"></i>
+										</button>
+										<button class="categoryDetailEditView" type="button" onclick="submitCategoryDetailEdit(this)" style="display: none">
+											<i class="fa fa-check-circle" style="color: green"></i>
+										</button>
+										<button class="categoryDetailEditView" type="button" onclick="cancelCategoryDetailEdit(this)" style="display: none">
+											<i class="fa fa-times-circle" style="color: red"></i>
+										</button>
+									</td>
+								</tr>
+							</th:block>
+						</tbody>
+					</table>
+					<!-- 更新分類 -->
+					<form id="editCategoryForm" th:action="@{/updateCategory}" method="post" style="display: none" th:object="${category}">
+						<input th:field="*{pkCategory}">
+						<input th:field="*{description}">
+					</form>
+					<!-- 更新分類細項 -->
+					<form id="editCategoryDetailForm" th:action="@{/updateCategoryDetail}" method="post" style="display: none" th:object="${categoryDetail}">
+						<input th:field="*{pkCategoryDetail}">
+						<input th:field="*{category}">
+						<input th:field="*{description}">
 					</form>
 					<!-- /.table-responsive -->
 				</div>

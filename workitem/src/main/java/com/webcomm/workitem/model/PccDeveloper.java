@@ -2,20 +2,30 @@ package com.webcomm.workitem.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.validator.constraints.Length;
 
@@ -50,6 +60,11 @@ public class PccDeveloper implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "UPDATE_DATE")
 	private Date updateDate;
+
+	@OneToMany(mappedBy = "pccDeveloper", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OrderBy("createDate DESC")
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private Set<Item> items;
 
 	public Long getPkPccDeveloper() {
 		return pkPccDeveloper;
@@ -89,6 +104,14 @@ public class PccDeveloper implements Serializable {
 
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
+	}
+
+	public Set<Item> getItems() {
+		return items;
+	}
+
+	public void setItems(Set<Item> items) {
+		this.items = items;
 	}
 
 }

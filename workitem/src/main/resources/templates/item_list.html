@@ -35,12 +35,68 @@
 		});
 
 		$("#pccDeveloper").change(function() {
-			var selectedUserId = $("#pccDeveloper").val();
-			Cookies.set('userId', selectedUserId);
+			setUserIdToCookie();
 			window.location.href = "/";
 		});
 
+		setCategoryDetail();
+		$("#categoryDetail\\.category").change(function() {
+			setCategoryDetail();
+		});
+
+		$(".editCategory").change(function() {
+			setEditCategoryDetail(this);
+		});
+
+		//將UserId設進Cookie
+		setUserIdToCookie();
+
 	});
+
+	/* set UserId to Cookie */
+	function setUserIdToCookie() {
+		var selectedUserId = $("#pccDeveloper").val();
+		if (selectedUserId) {
+			Cookies.set('userId', selectedUserId);
+		} else {
+			Cookies.set('userId', 1);
+		}
+	}
+
+	/* 當選擇待辦事項時，設定待辦事項細項 */
+	function setCategoryDetail() {
+		var selectedCText = $("#categoryDetail\\.category").find("option:selected").text();
+		$("#categoryDetail > option").hide();
+		$("#categoryDetail > option").filter(function() {
+			return $(this).attr("class") == selectedCText
+		}).show();
+		$("#categoryDetail > option").each(function() {
+			if ($(this).css("display") !== 'none') {
+				$("#categoryDetail").val($(this).val());
+				return false;
+			} else {
+				$("#categoryDetail").val('');
+			}
+		});
+	}
+
+	/* 當編輯待辦事項時，設定待辦事項細項 */
+	function setEditCategoryDetail(e) {
+		var curTr = $(e).parent().parent();
+		var selectedCText = $(e).find("option:selected").text();
+		curTr.find(".editCategoryDetail > option").hide();
+		curTr.find(".editCategoryDetail > option").filter(function() {
+			return $(this).attr("class") == selectedCText
+		}).show();
+		curTr.find(".editCategoryDetail > option").each(function() {
+			if ($(this).css("display") !== 'none') {
+				curTr.find(".editCategoryDetail").val($(this).val());
+				return false;
+			} else {
+				curTr.find(".editCategoryDetail").val('');
+			}
+		});
+	}
 
 	function showItemEditView(e) {
 		$(".itemEditView").hide();
@@ -55,7 +111,7 @@
 		var editRow = $(e).parent().parent();
 		var editForm = document.forms["editWorkitemForm"];
 		// pkItem
-		var pkItem = editRow.find("input[name='pkItem']").val();
+		var pkItem = editRow.find(".editPkItem").val();
 		editForm.action = "/deleteItem";
 		editForm['pkItem'].value = pkItem;
 		editForm.submit();
@@ -63,22 +119,24 @@
 
 	function submitItemEdit(e) {
 		$(e).prop('disabled', true);
-
 		var editRow = $(e).parent().parent();
 		// pkItem
-		var pkItem = editRow.find("input[name='pkItem']").val();
+		var pkItem = editRow.find(".editPkItem").val();
 		//pccDeveloper
-		var pccDeveloperVal = editRow.find("select[name='pccDeveloper']").val();
+		var pccDeveloperVal = editRow.find(".editPccDeveloper").val();
 		//category
-		var categoryVal = editRow.find("select[name='category']").val();
+		var categoryVal = editRow.find(".editCategory").val();
+		//categoryDetail
+		var categoryDetailVal = editRow.find(".editCategoryDetail").val();
 		//content
-		var contentVal = editRow.find("input[name='content']").val();
+		var contentVal = editRow.find(".editContent").val();
 		//workTime
-		var workTimeVal = editRow.find("input[name='workTime']").val();
+		var workTimeVal = editRow.find(".editWorkTime").val();
 		var editForm = document.forms["editWorkitemForm"];
 		editForm['pkItem'].value = pkItem;
 		editForm['pccDeveloper'].value = pccDeveloperVal;
 		editForm['category'].value = categoryVal;
+		editForm['categoryDetail'].value = categoryDetailVal;
 		editForm['content'].value = contentVal;
 		editForm['workTime'].value = workTimeVal;
 		editForm.submit();
@@ -139,13 +197,16 @@
 									</select>
 								</div>
 								<div class="form-group col-lg-2">
-									<select class="form-control" th:field="*{category}">
-										<th:block th:each="category:${categoryList}">
-											<option th:value="${category.pkCategory}" th:text="${category.description}">...</option>
-										</th:block>
+									<select class="form-control" th:field="*{categoryDetail.category}">
+										<option th:each="category:${categoryWODayOffList}" th:value="${category.pkCategory}" th:text="${category.description}">...</option>
 									</select>
 								</div>
-								<div class="form-group col-lg-7">
+								<div class="form-group col-lg-3">
+									<select class="form-control" th:field="*{categoryDetail}">
+										<option th:classappend="${categoryDetail.category.description}" th:each="categoryDetail:${categoryDetailWODayOffList}" th:value="${categoryDetail.pkCategoryDetail}" th:text="${categoryDetail.description}">...</option>
+									</select>
+								</div>
+								<div class="form-group col-lg-4">
 									<input class="form-control" th:field="*{content}" placeholder="請輸入工作內容">
 								</div>
 								<div class="form-group input-group col-lg-1">
@@ -160,7 +221,7 @@
 								<div class="form-group col-lg-4 text-right">
 									<!-- 									<button type="button" id="setUserBtn" class="btn btn-info">設定使用者</button> -->
 									<button type="button" id="dayOffBtn" class="btn btn-success">休假</button>
-									<button type="submit" class="btn btn-default">送出</button>
+									<button type="submit" class="btn btn-default" onclick="setUserIdToCookie();">送出</button>
 									<button type="reset" class="btn btn-default">重設</button>
 								</div>
 							</div>
@@ -186,6 +247,7 @@
 							<tr>
 								<th>使用者</th>
 								<th>分類</th>
+								<th>分類細項</th>
 								<th>內容</th>
 								<th>時數</th>
 								<th>時間</th>
@@ -194,49 +256,42 @@
 								<th style="display: none"></th>
 								<th style="display: none"></th>
 								<th style="display: none"></th>
+								<th style="display: none"></th>
 							</tr>
 						</thead>
 						<tbody>
-							<th:block th:each="item,itemStat:${itemList}">
-								<tr>
-									<td class="itemListView" th:text="${item.pccDeveloper.name}"></td>
-									<td class="itemListView" th:text="${item.category.description}"></td>
-									<td class="itemListView" th:text="${item.content}">...</td>
-									<td class="itemListView" th:text="${item.workTime}"></td>
-									<td class="itemEditView" style="display: none">
-										<select class="form-control" name="pccDeveloper">
-											<option th:each="pccDeveloper:${pccDeveloperList}" th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}" th:selected="${pccDeveloper}==${item.pccDeveloper}"></option>
-										</select>
-									</td>
-									<td class="itemEditView" style="display: none">
-										<select class="form-control" name="category">
-											<option th:each="category:${categoryList}" th:value="${category.pkCategory}" th:text="${category.description}" th:selected="${category}==${item.category}">...</option>
-										</select>
-									</td>
-									<td class="itemEditView" style="display: none">
-										<input name="content" th:value="${item.content}">
-									</td>
-									<td class="itemEditView" style="display: none">
-										<input name="workTime" th:value="${item.workTime}">
-									</td>
-									<td th:text="${#dates.format(item.createDate, 'yyyy-MM-dd')}"></td>
-									<td>
-										<input name="pkItem" th:value="${item.pkItem}" style="display: none" readonly>
-										<button class="itemListView" type="button" onclick="showItemEditView(this)">
-											<i class="fa fa-edit"></i>
-										</button>
-										<button class="itemListView" type="button" onclick="deleteItem(this)">
-											<i class="fa fa-trash"></i>
-										</button>
-										<button class="itemEditView" type="button" onclick="submitItemEdit(this)" style="display: none">
-											<i class="fa fa-check-circle" style="color: green"></i>
-										</button>
-										<button class="itemEditView" type="button" onclick="cancelItemEdit(this)" style="display: none">
-											<i class="fa fa-times-circle" style="color: red"></i>
-										</button>
-									</td>
-								</tr>
-							</th:block>
+							<tr th:each="item,itemStat:${itemList}">
+								<td class="itemListView" th:text="${item.pccDeveloper.name}"></td>
+								<td class="itemListView" th:text="${item.categoryDetail.category.description}"></td>
+								<td class="itemListView" th:text="${item.categoryDetail.description}"></td>
+								<td class="itemListView" th:text="${item.content}"></td>
+								<td class="itemListView" th:text="${item.workTime}"></td>
+								<td class="itemEditView" style="display: none"><select class="form-control editPccDeveloper">
+										<option th:each="pccDeveloper:${pccDeveloperList}" th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}" th:selected="${pccDeveloper}==${item.pccDeveloper}"></option>
+									</select></td>
+								<td class="itemEditView" style="display: none"><select class="form-control editCategory">
+										<option th:each="category:${categoryAllList}" th:value="${category.pkCategory}" th:text="${category.description}" th:selected="${category}==${item.categoryDetail.category}">...</option>
+									</select></td>
+								<td class="itemEditView" style="display: none"><select class="form-control editCategoryDetail">
+										<option th:each="categoryDetail:${categoryDetailAllList}" th:classappend="${categoryDetail.category.description}" th:value="${categoryDetail.pkCategoryDetail}" th:text="${categoryDetail.description}" th:selected="${categoryDetail}==${item.categoryDetail}">...</option>
+									</select></td>
+								<td class="itemEditView" style="display: none"><input class="editContent" th:value="${item.content}"></td>
+								<td class="itemEditView" style="display: none"><input class="editWorkTime" th:value="${item.workTime}"></td>
+								<td th:text="${#dates.format(item.createDate, 'yyyy-MM-dd')}"></td>
+								<td><input class="editPkItem" th:value="${item.pkItem}" style="display: none" readonly>
+									<button class="itemListView" type="button" onclick="showItemEditView(this)">
+										<i class="fa fa-edit"></i>
+									</button>
+									<button class="itemListView" type="button" onclick="deleteItem(this)">
+										<i class="fa fa-trash"></i>
+									</button>
+									<button class="itemEditView" type="button" onclick="submitItemEdit(this)" style="display: none">
+										<i class="fa fa-check-circle" style="color: green"></i>
+									</button>
+									<button class="itemEditView" type="button" onclick="cancelItemEdit(this)" style="display: none">
+										<i class="fa fa-times-circle" style="color: red"></i>
+									</button></td>
+							</tr>
 						</tbody>
 						<!-- /.table-responsive -->
 					</table>
@@ -244,6 +299,7 @@
 						<input name="pkItem">
 						<input name="pccDeveloper">
 						<input name="category">
+						<input name="categoryDetail">
 						<input name="content">
 						<input name="workTime">
 					</form>

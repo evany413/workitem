@@ -8,6 +8,6 @@ import com.webcomm.workitem.model.CategoryDetail;
 @Repository
 public interface CategoryDetailRepository extends JpaRepository<CategoryDetail, Long> {
 
-	CategoryDetail getFirstByDescription(String s);
+	public CategoryDetail getFirstByDescription(String s);
 
 }

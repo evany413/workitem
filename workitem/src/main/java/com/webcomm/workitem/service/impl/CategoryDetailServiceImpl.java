@@ -48,4 +48,21 @@ public class CategoryDetailServiceImpl implements CategoryDetailService {
 		return repo.getFirstByDescription(s);
 	}
 
+	@Override
+	public List<CategoryDetail> findAllWithoutDayOff() {
+		List<CategoryDetail> list = repo.findAll();
+		for (Iterator<CategoryDetail> iter = list.listIterator(); iter.hasNext();) {
+			CategoryDetail cd = iter.next();
+			if ("休假事項".equals(cd.getDescription())) {
+				iter.remove();
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public void deleteById(long pkCategoryDetail) {
+		repo.deleteById(pkCategoryDetail);
+	}
+
 }

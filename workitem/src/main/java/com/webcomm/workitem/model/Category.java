@@ -35,11 +35,6 @@ public class Category implements Serializable {
 	@Column(name = "PK_CATEGORY", length = 20)
 	private Long pkCategory;
 
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	@OrderBy("createDate DESC")
-	private Set<CategoryDetail> categoryDetail;
-
 	/* 分類名稱 */
 	@NotEmpty(message = "分類名稱不能為空")
 	@Length(max = 100, message = "分類名稱長度不得超過100字")
@@ -56,20 +51,17 @@ public class Category implements Serializable {
 	@Column(name = "UPDATE_DATE")
 	private Date updateDate;
 
+	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OrderBy("createDate DESC")
+	@OnDelete(action = OnDeleteAction.CASCADE)
+	private Set<CategoryDetail> categoryDetails;
+
 	public Long getPkCategory() {
 		return pkCategory;
 	}
 
 	public void setPkCategory(Long pkCategory) {
 		this.pkCategory = pkCategory;
-	}
-
-	public Set<CategoryDetail> getCategoryDetail() {
-		return categoryDetail;
-	}
-
-	public void setCategoryDetail(Set<CategoryDetail> categoryDetail) {
-		this.categoryDetail = categoryDetail;
 	}
 
 	public String getDescription() {
@@ -94,6 +86,14 @@ public class Category implements Serializable {
 
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
+	}
+
+	public Set<CategoryDetail> getCategoryDetails() {
+		return categoryDetails;
+	}
+
+	public void setCategoryDetails(Set<CategoryDetail> categoryDetails) {
+		this.categoryDetails = categoryDetails;
 	}
 
 }

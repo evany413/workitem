@@ -98,23 +98,26 @@ public class ExcelExpoter {
 			// 建立單元格(第一列)
 			Cell indexCell = row.createCell(0); // 項次
 			Cell userCell = row.createCell(1); // 使用者
-			Cell contentCell = row.createCell(2); // 使用者
-			Cell categoryCell = row.createCell(3); // 分類
+			Cell contentCell = row.createCell(2); // 分類
+			Cell categoryCell = row.createCell(3); // 分類細項
+			Cell categoryDetailCell = row.createCell(3); // 工作內容
 			Cell workTimeCell = row.createCell(4); // 時數
-			Cell dateCell = row.createCell(5); // 時數
+			Cell dateCell = row.createCell(5); // 建立日期
 
 			// 給單元格賦值
 			if (count == 0) {
 				indexCell.setCellValue("項次");
 				userCell.setCellValue("使用者");
 				categoryCell.setCellValue("分類");
+				categoryDetailCell.setCellValue("分類細項");
 				contentCell.setCellValue("工作內容");
 				workTimeCell.setCellValue("時數");
 				dateCell.setCellValue("建立日期");
 			} else {
 				indexCell.setCellValue(count);
 				userCell.setCellValue(i.getPccDeveloper().getName());
-				categoryCell.setCellValue(i.getCategory().getDescription());
+				categoryCell.setCellValue(i.getCategoryDetail().getDescription());
+				categoryDetailCell.setCellValue(i.getCategoryDetail().getCategory().getDescription());
 				contentCell.setCellValue(i.getContent());
 				workTimeCell.setCellValue(i.getWorkTime());
 				dateCell.setCellValue(i.getCreateDate());
@@ -256,15 +259,15 @@ public class ExcelExpoter {
 				while (totalTime > 0) {
 					System.out.println(currRow);
 					System.out.println(currCell);
-					if ("休假事項".equals(currentItem.getCategory().getDescription())) {
+//					if ("休假事項".equals(currentItem.getCategory().getDescription())) {
 //						sheet.getRow(currRow - 1).getCell(currCell).setCellValue("cool");
-						sheet.getRow(currRow - 1).getCell(currCell).setCellStyle(style2);
+//						sheet.getRow(currRow - 1).getCell(currCell).setCellStyle(style2);
 //						fillcell = cell.getRow().createCell(cell.getColumnIndex() + 1); // 下一格
-					} else {
+//					} else {
 //						sheet.getRow(currRow - 1).getCell(currCell).setCellValue("cool");
-						sheet.getRow(currRow - 1).getCell(currCell).setCellStyle(style1);
+//						sheet.getRow(currRow - 1).getCell(currCell).setCellStyle(style1);
 //						fillcell = cell.getRow().createCell(cell.getColumnIndex() + 1);
-					}
+//					}
 					currCell = (currCell + 1) % 7;
 					currRow = currCell / 7;
 					totalTime -= 8;
@@ -273,7 +276,7 @@ public class ExcelExpoter {
 				currentDate = null; // 重置workitem日期
 				totalTime = 0;// 重置workitem時間
 			} else {
-				workSet.add(currentItem.getCategory().getDescription());
+//				workSet.add(currentItem.getCategory().getDescription());
 				totalTime += currentItem.getWorkTime();
 			}
 

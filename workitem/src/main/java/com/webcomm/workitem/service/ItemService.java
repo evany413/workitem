@@ -41,4 +41,6 @@ public interface ItemService {
 
 	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date);
 
+	public void deleteById(long pkItem);
+
 }

@@ -146,4 +146,10 @@ public class ItemServiceImpl implements ItemService {
 		return total;
 	}
 
+	@Override
+	public void deleteById(long pkItem) {
+		repo.deleteById(pkItem);
+		
+	}
+
 }

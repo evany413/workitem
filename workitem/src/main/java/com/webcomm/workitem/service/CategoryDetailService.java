@@ -2,6 +2,7 @@ package com.webcomm.workitem.service;
 
 import java.util.List;
 
+import com.webcomm.workitem.model.Category;
 import com.webcomm.workitem.model.CategoryDetail;
 
 public interface CategoryDetailService {
@@ -17,5 +18,9 @@ public interface CategoryDetailService {
 	public CategoryDetail update(CategoryDetail categoryDetail);
 
 	public CategoryDetail findDayOff();
+
+	public List<CategoryDetail> findAllWithoutDayOff();
+
+	public void deleteById(long pkCategoryDetail);
 
 }
