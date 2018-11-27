@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.webcomm.workitem.model.Category;
+import com.webcomm.workitem.model.PccDeveloper;
 import com.webcomm.workitem.repository.CategoryRepository;
 import com.webcomm.workitem.service.CategoryService;
 
@@ -57,6 +58,29 @@ public class CategoryServiceImpl implements CategoryService {
 	@Override
 	public Category update(Category category) {
 		return repo.save(category);
+	}
+
+	@Override
+	public List<Category> findAll(PccDeveloper pccDeveloper) {
+		return repo.findByPccDeveloper(pccDeveloper);
+	}
+
+	@Override
+	public List<Category> findAllWithoutDayOff(PccDeveloper pccDeveloper) {
+		List<Category> list = repo.findAll();
+		for (Iterator<Category> iter = list.listIterator(); iter.hasNext();) {
+			Category c = iter.next();
+			if ("休假事項".equals(c.getDescription())) {
+				iter.remove();
+			}
+		}
+		return list;
+	}
+
+	@Override
+	public Category findDayOff(PccDeveloper pccDeveloper) {
+		String s = "休假事項";
+		return repo.getFirstByDescription(s);
 	}
 
 }

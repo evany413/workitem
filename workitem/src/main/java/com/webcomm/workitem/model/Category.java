@@ -11,6 +11,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.SequenceGenerator;
@@ -18,6 +20,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
@@ -55,6 +58,12 @@ public class Category implements Serializable {
 	@OrderBy("createDate DESC")
 	@OnDelete(action = OnDeleteAction.CASCADE)
 	private Set<CategoryDetail> categoryDetails;
+
+	/* 使用者 */
+	@NotNull(message = "請選擇使用者")
+	@ManyToOne
+	@JoinColumn(name = "FK_PCC_DEVELOPER")
+	private PccDeveloper pccDeveloper;
 
 	public Long getPkCategory() {
 		return pkCategory;
@@ -94,6 +103,14 @@ public class Category implements Serializable {
 
 	public void setCategoryDetails(Set<CategoryDetail> categoryDetails) {
 		this.categoryDetails = categoryDetails;
+	}
+
+	public PccDeveloper getPccDeveloper() {
+		return pccDeveloper;
+	}
+
+	public void setPccDeveloper(PccDeveloper pccDeveloper) {
+		this.pccDeveloper = pccDeveloper;
 	}
 
 }
