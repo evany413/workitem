@@ -26,4 +26,3 @@ classes
 hs_err_pid*
 !.gitignore
 clientdb.xml
-application.yml
