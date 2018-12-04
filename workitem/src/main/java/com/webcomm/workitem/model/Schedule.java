@@ -11,15 +11,17 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.NotEmpty;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.validator.constraints.Length;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "SCHEDULE")
 public class Schedule {
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "scheduleSeq")
 	@SequenceGenerator(name = "scheduleSeq", sequenceName = "SCHEDULE_SEQ")
@@ -27,6 +29,7 @@ public class Schedule {
 	private Long pkSchedule;
 
 	/* 西元日期 */
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Column(name = "SKD_DATE")
 	private Date skdDate;
 
@@ -42,11 +45,13 @@ public class Schedule {
 	@Column(name = "NOTE", length = 150)
 	private String note;
 
+	@JsonIgnore
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_DATE")
 	private Date createDate;
 
+	@JsonIgnore
 	@UpdateTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "UPDATE_DATE")

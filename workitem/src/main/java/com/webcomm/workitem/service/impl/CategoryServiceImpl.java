@@ -61,13 +61,13 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
-	public List<Category> findAll(PccDeveloper pccDeveloper) {
-		return repo.findByPccDeveloper(pccDeveloper);
+	public List<Category> findAll(long id) {
+		return repo.findByPccDeveloper_PkPccDeveloper(id);
 	}
 
 	@Override
-	public List<Category> findAllWithoutDayOff(PccDeveloper pccDeveloper) {
-		List<Category> list = repo.findAll();
+	public List<Category> findAllWithoutDayOff(long id) {
+		List<Category> list = repo.findByPccDeveloper_PkPccDeveloper(id);
 		for (Iterator<Category> iter = list.listIterator(); iter.hasNext();) {
 			Category c = iter.next();
 			if ("休假事項".equals(c.getDescription())) {
@@ -78,9 +78,22 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
-	public Category findDayOff(PccDeveloper pccDeveloper) {
+	public Category findDayOff(long id) {
 		String s = "休假事項";
-		return repo.getFirstByDescription(s);
+		return repo.getFirstByDescriptionAndPccDeveloper_PkPccDeveloper(s, id);
+	}
+
+	/* 新增休假事項 */
+	@Override
+	public Category addDayOff(PccDeveloper user) {
+		Category category = findDayOff(user.getPkPccDeveloper());
+		if (null == category) {
+			category = new Category();
+			category.setDescription("休假事項");
+			category.setPccDeveloper(user);
+			category = repo.save(category);
+		}
+		return category;
 	}
 
 }

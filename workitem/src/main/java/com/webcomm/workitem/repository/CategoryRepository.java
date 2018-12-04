@@ -15,4 +15,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
 	public List<Category> findByPccDeveloper(PccDeveloper pccDeveloper);
 
+	public List<Category> findByPccDeveloper_PkPccDeveloper(long id);
+
+	public Category getFirstByDescriptionAndPccDeveloper_PkPccDeveloper(String s, long id);
+
 }

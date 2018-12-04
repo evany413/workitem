@@ -41,12 +41,22 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public Date getLastDate() {
-		return repo.findFirstByOrderByCreateDateDesc().getCreateDate();
+		Date d = null;
+		Item i = repo.findFirstByOrderByCreateDateDesc();
+		if (null != i) {
+			d = i.getCreateDate();
+		}
+		return d;
 	}
 
 	@Override
 	public Date getStartDate() {
-		return repo.findFirstByOrderByCreateDateAsc().getCreateDate();
+		Date d = null;
+		Item i = repo.findFirstByOrderByCreateDateAsc();
+		if (null != i) {
+			d = i.getCreateDate();
+		}
+		return d;
 	}
 
 	@Override
@@ -139,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date) {
 		Integer total = 0;
-		List<Item> list = repo.findByPccDeveloperAndCreateDateAfter(selectedPccDeveloper,date);
+		List<Item> list = repo.findByPccDeveloperAndCreateDateAfter(selectedPccDeveloper, date);
 		for (Item item : list) {
 			total += item.getWorkTime();
 		}
@@ -149,7 +159,32 @@ public class ItemServiceImpl implements ItemService {
 	@Override
 	public void deleteById(long pkItem) {
 		repo.deleteById(pkItem);
-		
+
+	}
+
+	@Override
+	public List<Item> findAllByPccDeveloper(long userId) {
+		return repo.findByPccDeveloper_PkPccDeveloper(userId);
+	}
+
+	@Override
+	public Date getStartDateByPccDeveloper(long userId) {
+		Item item = repo.findFirstByPccDeveloper_PkPccDeveloperOrderByCreateDateAsc(userId);
+		if (null != item) {
+			return item.getCreateDate();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public Date getLastDateByPccDeveloper(long userId) {
+		Item item = repo.findFirstByPccDeveloper_PkPccDeveloperOrderByCreateDateDesc(userId);
+		if (null != item) {
+			return item.getCreateDate();
+		} else {
+			return null;
+		}
 	}
 
 }

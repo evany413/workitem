@@ -60,7 +60,7 @@ public class Category implements Serializable {
 	private Set<CategoryDetail> categoryDetails;
 
 	/* 使用者 */
-	@NotNull(message = "請選擇使用者")
+//	@NotNull(message = "請選擇使用者")
 	@ManyToOne
 	@JoinColumn(name = "FK_PCC_DEVELOPER")
 	private PccDeveloper pccDeveloper;

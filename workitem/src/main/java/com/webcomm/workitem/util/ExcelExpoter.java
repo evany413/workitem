@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -22,10 +26,13 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import com.webcomm.workitem.model.Item;
+import com.webcomm.workitem.model.PccDeveloper;
 import com.webcomm.workitem.model.Schedule;
 import com.webcomm.workitem.service.ItemService;
+import com.webcomm.workitem.service.PccDeveloperService;
 import com.webcomm.workitem.service.ScheduleService;
 
 /**
@@ -34,6 +41,17 @@ import com.webcomm.workitem.service.ScheduleService;
  */
 @Component
 public class ExcelExpoter {
+
+	@Autowired
+	PccDeveloperService pccDeveloperService;
+	@Autowired
+	ItemService itemService;
+	@Autowired
+	ScheduleService scheduleService;
+	@Autowired
+	private HttpServletRequest request;
+	@Autowired
+	private HttpServletResponse response;
 
 	private static final Map<Integer, String> map;
 	static {
@@ -51,11 +69,6 @@ public class ExcelExpoter {
 		map.put(11, "十一月");
 		map.put(12, "十二月");
 	}
-
-	@Autowired
-	ItemService itemService;
-	@Autowired
-	ScheduleService scheduleService;
 
 	HSSFWorkbook wb = new HSSFWorkbook();
 	// CreationHelper 可以理解為一個工具類，由這個工具類可以獲得 日期格式化的一個例項
@@ -75,9 +88,10 @@ public class ExcelExpoter {
 		timestyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-MM-dd"));
 		HSSFSheet sheet;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月");
-		List<Item> list = itemService.findAll();
+		long userId = getCookieUserId();
+		List<Item> list = itemService.findAllByPccDeveloper(userId);
 
-		createSKDSheet();
+		createSKDSheet(); // 第一頁人事行政局行事曆
 
 		String tempDate = "";
 		Integer count = 0;
@@ -98,26 +112,26 @@ public class ExcelExpoter {
 			// 建立單元格(第一列)
 			Cell indexCell = row.createCell(0); // 項次
 			Cell userCell = row.createCell(1); // 使用者
-			Cell contentCell = row.createCell(2); // 分類
-			Cell categoryCell = row.createCell(3); // 分類細項
-			Cell categoryDetailCell = row.createCell(3); // 工作內容
-			Cell workTimeCell = row.createCell(4); // 時數
-			Cell dateCell = row.createCell(5); // 建立日期
+			Cell categoryCell = row.createCell(2); // 分類
+			Cell categoryDetailCell = row.createCell(3); // 分類細項
+			Cell contentCell = row.createCell(4); // 工作內容
+			Cell workTimeCell = row.createCell(5); // 時數
+			Cell dateCell = row.createCell(6); // 建立日期
 
 			// 給單元格賦值
 			if (count == 0) {
 				indexCell.setCellValue("項次");
 				userCell.setCellValue("使用者");
+				contentCell.setCellValue("工作內容");
 				categoryCell.setCellValue("分類");
 				categoryDetailCell.setCellValue("分類細項");
-				contentCell.setCellValue("工作內容");
 				workTimeCell.setCellValue("時數");
 				dateCell.setCellValue("建立日期");
 			} else {
 				indexCell.setCellValue(count);
 				userCell.setCellValue(i.getPccDeveloper().getName());
-				categoryCell.setCellValue(i.getCategoryDetail().getDescription());
-				categoryDetailCell.setCellValue(i.getCategoryDetail().getCategory().getDescription());
+				categoryCell.setCellValue(i.getCategoryDetail().getCategory().getDescription());
+				categoryDetailCell.setCellValue(i.getCategoryDetail().getDescription());
 				contentCell.setCellValue(i.getContent());
 				workTimeCell.setCellValue(i.getWorkTime());
 				dateCell.setCellValue(i.getCreateDate());
@@ -130,17 +144,25 @@ public class ExcelExpoter {
 
 	public void createSKDSheet() {
 		Calendar calendar = Calendar.getInstance();
-		Date startDate = itemService.getStartDate();
-		Date endDate = itemService.getLastDate();
+		long userId = getCookieUserId();
+		Date startDate = itemService.getStartDateByPccDeveloper(userId); // work item 起始日期
+		Date endDate = itemService.getLastDateByPccDeveloper(userId); // work item 結束日期
+		if (null == startDate || null == endDate) {
+			throw new RuntimeException("資料庫尚無work item資料");
+		}
 		calendar.setTime(startDate);
 		Integer startYear = calendar.get(Calendar.YEAR);
 		calendar.setTime(endDate);
 		Integer endYear = calendar.get(Calendar.YEAR);
-		List<Schedule> skdList = new ArrayList<Schedule>();
+
+		List<Schedule> skdList = new ArrayList<Schedule>(); // 取得人事行政局行事曆
 		for (int i = startYear; i <= endYear; i++) {
 			for (Schedule skd : scheduleService.getByYear(i)) {
 				skdList.add(skd);
 			}
+		}
+		if (skdList.size() == 0) {
+			throw new RuntimeException("資料庫尚無行事曆資料");
 		}
 		HSSFSheet sheet = null;
 		if (null == wb.getSheet(startYear + "行事曆")) {
@@ -307,7 +329,11 @@ public class ExcelExpoter {
 		Row firstRow = sheet.createRow(currentRow);
 		firstRow.createCell(0).setCellValue(map.get(month));
 		firstRow.getCell(0).setCellStyle(style1);
-		sheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 6));
+		try {
+			sheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow, 0, 6));
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 		currentRow++; // 插入第一行
 		Row secondRow = sheet.createRow(currentRow);
 		secondRow.createCell(0).setCellValue("日");
@@ -334,6 +360,22 @@ public class ExcelExpoter {
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+
+	public Long getCookieUserId() {
+		/* 取得cookie中所存的userId(為預設顯示的user) */
+		List<PccDeveloper> pccDeveloperList = pccDeveloperService.findAll();
+		Cookie cookie = WebUtils.getCookie(request, "userId");
+		if (null == cookie || "null".equals(cookie.getValue())) { // 前端Cookie若無值，會取得null字串
+			if (pccDeveloperList.size() > 0) {
+				cookie = new Cookie("userId", Long.toString(pccDeveloperList.get(0).getPkPccDeveloper())); // 以pccDeveloperList中第一個的key做為預設值
+			} else {
+				cookie = new Cookie("userId", "1"); // if pccDeveloperList is empty, set a default value
+			}
+			response.addCookie(cookie);
+		}
+		Long userId = Long.parseLong(cookie.getValue());
+		return userId;
 	}
 
 }

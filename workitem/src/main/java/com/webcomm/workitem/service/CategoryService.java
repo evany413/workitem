@@ -20,9 +20,11 @@ public interface CategoryService {
 
 	public Category update(Category category);
 
-	public List<Category> findAll(PccDeveloper pccDeveloper);
+	public List<Category> findAll(long id);
 
-	public List<Category> findAllWithoutDayOff(PccDeveloper pccDeveloper);
+	public List<Category> findAllWithoutDayOff(long id);
 
-	public Category findDayOff(PccDeveloper pccDeveloper);
+	public Category findDayOff(long id);
+
+	public Category addDayOff(PccDeveloper user);
 }

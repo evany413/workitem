@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="" />
+<meta name="author" content="" />
+<title>WorkItem</title>
+<link th:href="@{/vendor/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+<link th:href="@{/vendor/metisMenu/metisMenu.min.css}" rel="stylesheet" />
+<link th:href="@{/vendor/datatables-plugins/dataTables.bootstrap.css}" rel="stylesheet">
+<link th:href="@{/vendor/datatables-responsive/dataTables.responsive.css}" rel="stylesheet">
+<link th:href="@{/dist/css/sb-admin-2.css}" rel="stylesheet" />
+<link th:href="@{/vendor/font-awesome/css/font-awesome.min.css}" rel="stylesheet" type="text/css" />
+<script th:src="@{/vendor/jquery/jquery.min.js}"></script>
+<script th:src="@{/vendor/bootstrap/js/bootstrap.min.js}"></script>
+<script th:src="@{/vendor/metisMenu/metisMenu.min.js}"></script>
+<script th:src="@{/vendor/datatables/js/jquery.dataTables.min.js}"></script>
+<script th:src="@{/vendor/datatables-plugins/dataTables.bootstrap.min.js}"></script>
+<script th:src="@{/vendor/datatables-responsive/dataTables.responsive.js}"></script>
+<script th:src="@{/dist/js/sb-admin-2.js}"></script>
+<script>
+	$(document).ready(function() {
+		$('#uploadForm').submit(function() {
+			if ($("#files")[0].files.length == 0) {
+				$("#msgUl").empty();
+				$("#msgUl").append("<li>no file selected</li>").css("color", "red");
+				return false;
+			} else {
+				$("#uploadBtn").prop("disabled", true);
+			}
+		});
+	});
+
+	function downloadFile(e) {
+		$("#downloadFileBtn").prop("disabled", true);
+		var id = $(e).parent().find("div").text();
+		window.location.href = "/downloadScheduleFile/" + id;
+	}
+
+	function deleteFile(e) {
+		$("#deleteFileBtn").prop("disabled", true);
+		var id = $(e).parent().find("div").text();
+		window.location.href = "/deleteScheduleFile/" + id;
+	}
+</script>
+</head>
+<body>
+	<div id="wrapper">
+		<!-- Navigation -->
+		<nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+			<div th:replace="fragments/header :: header"></div>
+			<div th:replace="fragments/sidebar :: sidebar"></div>
+		</nav>
+		<div id="page-wrapper">
+			<div class="row">
+				<div class="col-lg-12">
+					<!-- 					<h1 class="page-header">人事行政局行事曆管理</h1> -->
+					<h1 class="page-header">行事曆管理</h1>
+				</div>
+				<!-- /.col-lg-12 -->
+			</div>
+			<!-- /.row -->
+			<div class="row">
+				<div class="col-lg-12">
+					<!-- /.panel-heading -->
+					<div class="panel-body">
+						<div class="well">
+							<form role="form" method="post" th:action="@{/uploadMultipleFiles}" enctype="multipart/form-data" id="uploadForm">
+								<div class="row">
+									<div class="form-group col-lg-10">
+										<input class="form-control" type="file" name="files" id="files" multiple="multiple" style="height: auto;" />
+									</div>
+									<div class="form-group col-lg-2 text-right">
+										<button type="submit" class="btn btn-default" id="uploadBtn">送出</button>
+										<button type="reset" class="btn btn-default">重設</button>
+									</div>
+								</div>
+							</form>
+							<ul id="msgUl">
+								<li th:style="${#strings.contains(msg,'上傳成功') ? 'color: blue;' : 'color: red;'}" th:each=" msg:${message}" th:text="${msg}">...</li>
+							</ul>
+						</div>
+						<table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+							<thead>
+								<tr>
+									<th>項次</th>
+									<th>檔案名稱</th>
+									<th>檔案大小</th>
+									<th>是否匯入行事曆</th>
+									<th>操作</th>
+									<th style="display: none"></th>
+									<th style="display: none"></th>
+								</tr>
+							</thead>
+							<tbody>
+								<th:block th:each="file,fileStat:${fileList}">
+									<tr>
+										<td th:text="${fileStat.index}+1"></td>
+										<td th:text="${file.fileName}"></td>
+										<td th:text="${file.size}"></td>
+										<td th:text="${file.active}"></td>
+										<td>
+											<div th:text="${file.pkScheduleFile}" style="display: none"></div>
+											<button type="button" id="downloadFileBtn" onclick="downloadFile(this)">
+												<i class="fa fa-download"></i>
+											</button>
+											<button type="button" id="deleteFileBtn" onclick="deleteFile(this)">
+												<i class="fa fa-trash"></i>
+											</button>
+										</td>
+									</tr>
+								</th:block>
+							</tbody>
+						</table>
+						<!-- /.table-responsive -->
+					</div>
+					<!-- /.panel-body -->
+				</div>
+				<!-- page-wrapper-->
+			</div>
+		</div>
+	</div>
+</body>
+</html>

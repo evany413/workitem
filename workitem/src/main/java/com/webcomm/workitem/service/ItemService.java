@@ -34,10 +34,16 @@ public interface ItemService {
 	public Date getStartDateByPccDeveloper(PccDeveloper selectedPccDeveloper);
 
 	public Date getLastDateByPccDeveloper(PccDeveloper selectedPccDeveloper);
+	
+	public Date getStartDateByPccDeveloper(long userId);
+	
+	public Date getLastDateByPccDeveloper(long userId);
 
 	public Integer getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper);
 
 	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper);
+	
+	public List<Item> findAllByPccDeveloper(long userId);
 
 	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date);
 

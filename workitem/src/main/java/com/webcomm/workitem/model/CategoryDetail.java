@@ -64,6 +64,11 @@ public class CategoryDetail implements Serializable {
 	@JoinColumn(name = "FK_CATEGORY")
 	private Category category;
 
+	/* 使用者 */
+	@ManyToOne
+	@JoinColumn(name = "FK_PCC_DEVELOPER")
+	private PccDeveloper pccDeveloper;
+
 	public Long getPkCategoryDetail() {
 		return pkCategoryDetail;
 	}
@@ -110,6 +115,14 @@ public class CategoryDetail implements Serializable {
 
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+
+	public PccDeveloper getPccDeveloper() {
+		return pccDeveloper;
+	}
+
+	public void setPccDeveloper(PccDeveloper pccDeveloper) {
+		this.pccDeveloper = pccDeveloper;
 	}
 
 }

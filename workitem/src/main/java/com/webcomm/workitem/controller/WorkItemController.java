@@ -1,6 +1,9 @@
 package com.webcomm.workitem.controller;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,28 +16,38 @@ import javax.validation.Valid;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.WebUtils;
 
 import com.webcomm.workitem.model.Category;
 import com.webcomm.workitem.model.CategoryDetail;
 import com.webcomm.workitem.model.Item;
 import com.webcomm.workitem.model.PccDeveloper;
+import com.webcomm.workitem.model.ScheduleFile;
 import com.webcomm.workitem.service.CategoryDetailService;
 import com.webcomm.workitem.service.CategoryService;
 import com.webcomm.workitem.service.ItemService;
 import com.webcomm.workitem.service.PccDeveloperService;
+import com.webcomm.workitem.service.ScheduleFileService;
 import com.webcomm.workitem.service.ScheduleService;
 import com.webcomm.workitem.util.DateUtil;
 import com.webcomm.workitem.util.ExcelExpoter;
+import com.webcomm.workitem.util.HttpUtils;
 
 @Controller
 public class WorkItemController {
@@ -50,6 +63,8 @@ public class WorkItemController {
 	@Autowired
 	ScheduleService scheduleService;
 	@Autowired
+	ScheduleFileService scheduleFileService;
+	@Autowired
 	ExcelExpoter excelExpoter;
 	@Autowired
 	private HttpServletRequest request;
@@ -60,24 +75,16 @@ public class WorkItemController {
 	@GetMapping("/")
 	public String goIndex(@ModelAttribute Item item, Model model) {
 		System.out.println("*****into homepage*****");
-		List<Category> categoryWODayOffList = categoryService.findAllWithoutDayOff();
-		List<Category> categoryAllList = categoryService.findAll();
-		List<CategoryDetail> categoryDetailWODayOffList = categoryDetailService.findAllWithoutDayOff();
-		List<CategoryDetail> categoryDetailAllList = categoryDetailService.findAll();
 		List<PccDeveloper> pccDeveloperList = pccDeveloperService.findAll();
 
 		/* 取得cookie中所存的userId(為預設顯示的user) */
-		Cookie cookie = WebUtils.getCookie(request, "userId");
-		if (null == cookie || "null".equals(cookie.getValue())) { //前端Cookie若無值，會取得null字串
-			if (pccDeveloperList.size() > 0) {
-				cookie = new Cookie("userId", Long.toString(pccDeveloperList.get(0).getPkPccDeveloper())); // 以pccDeveloperList中第一個的key做為預設值
-			} else {
-				cookie = new Cookie("userId", "1"); // if pccDeveloperList is empty, set a default value
-			}
-			response.addCookie(cookie);
-		}
-		Long userId = Long.parseLong(cookie.getValue());
+		Long userId = getCookieUserId();
 		PccDeveloper selectedPccDeveloper = pccDeveloperService.getOne(userId);
+
+		List<Category> categoryWODayOffList = categoryService.findAllWithoutDayOff(userId);
+		List<Category> categoryAllList = categoryService.findAll(userId);
+		List<CategoryDetail> categoryDetailWODayOffList = categoryDetailService.findAllWithoutDayOff(userId);
+		List<CategoryDetail> categoryDetailAllList = categoryDetailService.findAll(userId);
 
 		/* 取出該user的work item */
 		List<Item> itemList = itemService.findAllByPccDeveloperWithOutDayOff(selectedPccDeveloper);
@@ -119,8 +126,9 @@ public class WorkItemController {
 	@GetMapping("/categoryList")
 	public String goCategoryList(@ModelAttribute Category category, @ModelAttribute CategoryDetail categoryDetail, Model model) {
 		System.out.println("*****into categoryList*****");
-		List<Category> categoryList = categoryService.findAllWithoutDayOff();
-		List<CategoryDetail> categoryDetailList = categoryDetailService.findAllWithoutDayOff();
+		Long userId = getCookieUserId();
+		List<Category> categoryList = categoryService.findAllWithoutDayOff(userId);
+		List<CategoryDetail> categoryDetailList = categoryDetailService.findAllWithoutDayOff(userId);
 		model.addAttribute("categoryList", categoryList);
 		model.addAttribute("categoryDetailList", categoryDetailList);
 		return "category_list";
@@ -158,8 +166,10 @@ public class WorkItemController {
 	@PostMapping("/insertDayOff")
 	public String InsertDayOff(@Valid @ModelAttribute Item item, BindingResult bindingResult, Model model) {
 		System.out.println("*****into insertDayOff*****");
+		Long userId = getCookieUserId();
+		PccDeveloper user = pccDeveloperService.getOne(userId);
 		/* evan@休假事項 - 休假事項 - 休假@8 */
-		CategoryDetail dayOffCategoryDetail = categoryDetailService.findDayOff();
+		CategoryDetail dayOffCategoryDetail = categoryDetailService.findDayOff(user);
 		Item insertItem = new Item();
 		BeanUtils.copyProperties(item, insertItem);// insertItem for insert, item for return
 		insertItem.setCategoryDetail(dayOffCategoryDetail); // 分類 設為"休假事項"
@@ -184,6 +194,9 @@ public class WorkItemController {
 	@GetMapping("/addCategory")
 	public String addCategory(@Valid @ModelAttribute Category category, BindingResult bindingResult, Model model) {
 		System.out.println("*****into addCategory*****");
+		Long userId = getCookieUserId();
+		PccDeveloper pccDeveloper = pccDeveloperService.getOne(userId);
+		category.setPccDeveloper(pccDeveloper);
 		List<String> errorMsg = new ArrayList<String>();
 		if (bindingResult.hasErrors()) {
 			for (FieldError f : bindingResult.getFieldErrors()) {
@@ -200,6 +213,9 @@ public class WorkItemController {
 	@GetMapping("/addCategoryDetail")
 	public String addCategoryDetail(@Valid @ModelAttribute CategoryDetail categoryDetail, BindingResult bindingResult, Model model) {
 		System.out.println("*****into addCategory*****");
+		Long userId = getCookieUserId();
+		PccDeveloper pccDeveloper = pccDeveloperService.getOne(userId);
+		categoryDetail.setPccDeveloper(pccDeveloper);
 		List<String> errorMsg = new ArrayList<String>();
 		if (bindingResult.hasErrors()) {
 			for (FieldError f : bindingResult.getFieldErrors()) {
@@ -343,9 +359,90 @@ public class WorkItemController {
 			response.setContentType("application/octet-stream");
 			response.setHeader("Content-disposition", "attachment; filename=" + new String(filename.getBytes("utf-8"), "ISO8859-1"));
 			wb.write(response.getOutputStream());
+			wb.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/* 上傳行事曆頁面 */
+	@GetMapping("/uploadFile")
+	public String uploadFile(Model model) {
+		List<ScheduleFile> fileList = scheduleFileService.findAll();
+		model.addAttribute("fileList", fileList);
+		return "scheduleFile_list";
+	}
+
+	/* 上傳多個行事歷 */
+	@PostMapping("/uploadMultipleFiles")
+	public String uploadMultipleFiles(@RequestParam("files") MultipartFile[] files, Model model) {
+		List<String> message = new ArrayList<String>();
+		for (MultipartFile f : files) {
+			if (null == f || f.getSize() == 0) {
+				message.add("file is empty");
+			} else {
+				try {
+					ScheduleFile dbFile = scheduleFileService.storeFile(f);
+					message.add("上傳成功： " + dbFile.getFileName());
+				} catch (Exception e) {
+					message.add(e.getMessage());
+				}
+			}
+		}
+		List<ScheduleFile> fileList = scheduleFileService.findAll();
+		model.addAttribute("fileList", fileList);
+		model.addAttribute("message", message);
+		return "scheduleFile_list";
+	}
+
+	@GetMapping("/downloadScheduleFile/{fileId}")
+	public void downloadFile(@PathVariable String fileId) throws IOException {
+		// Load file from database
+		ScheduleFile dbFile = scheduleFileService.getFile(Long.valueOf(fileId));
+		String fileName = dbFile.getFileName();
+		byte[] data = dbFile.getData();
+
+		response.setContentType("application/octet-stream");
+		// 判斷流覽器
+		boolean isMSIE = HttpUtils.isMSBrowser(request);
+		if (isMSIE) {
+			fileName = URLEncoder.encode(fileName, "UTF-8");
+		} else {
+			fileName = new String(fileName.getBytes("UTF-8"), "ISO-8859-1");
+		}
+		response.setHeader("Content-disposition", "attachment;filename=\"" + fileName + "\"");
+
+		OutputStream os = response.getOutputStream();
+		os.write(data);
+		os.close();
+	}
+
+	@GetMapping("/deleteScheduleFile/{fileId}")
+	public String deleteFile(@PathVariable String fileId, Model model) {
+		ScheduleFile f = scheduleFileService.getFile(Long.valueOf(fileId));
+		List<String> message = new ArrayList<String>();
+		message.add("已刪除" + f.getFileName());
+		scheduleFileService.deleteFile(Long.valueOf(fileId));
+		List<ScheduleFile> fileList = scheduleFileService.findAll();
+		model.addAttribute("fileList", fileList);
+		model.addAttribute("message", message);
+		return "scheduleFile_list";
+	}
+
+	public Long getCookieUserId() {
+		/* 取得cookie中所存的userId(為預設顯示的user) */
+		List<PccDeveloper> pccDeveloperList = pccDeveloperService.findAll();
+		Cookie cookie = WebUtils.getCookie(request, "userId");
+		if (null == cookie || "null".equals(cookie.getValue())) { // 前端Cookie若無值，會取得null字串
+			if (pccDeveloperList.size() > 0) {
+				cookie = new Cookie("userId", Long.toString(pccDeveloperList.get(0).getPkPccDeveloper())); // 以pccDeveloperList中第一個的key做為預設值
+			} else {
+				cookie = new Cookie("userId", "1"); // if pccDeveloperList is empty, set a default value
+			}
+			response.addCookie(cookie);
+		}
+		Long userId = Long.parseLong(cookie.getValue());
+		return userId;
 	}
 
 }
