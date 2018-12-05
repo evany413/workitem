@@ -61,7 +61,6 @@ public class CategoryDetailServiceImpl implements CategoryDetailService {
 			detail = new CategoryDetail();
 			detail.setPccDeveloper(user);
 			Category c = categoryService.addDayOff(user);
-			System.out.println(c.getPkCategory());
 			detail.setCategory(c);
 			detail.setDescription(s);
 			detail = repo.save(detail);

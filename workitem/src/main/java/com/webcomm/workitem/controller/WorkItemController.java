@@ -248,7 +248,6 @@ public class WorkItemController {
 	@PostMapping("/updateItem")
 	public String updateItem(@Valid Item item, BindingResult bindingResult, @RequestParam(value = "pkItem") Long pkItem, Model model) {
 		System.out.println("*****into updateItem*****");
-		System.out.println(pkItem);
 		List<String> errorMsg = new ArrayList<String>();
 		if (bindingResult.hasErrors()) {
 			errorMsg.add("更新時出現錯誤：");

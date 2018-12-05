@@ -229,7 +229,6 @@ public class ExcelExpoter {
 		dayOffStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
 		if (skd.getIsDayOff() == 2) {// 代表放假
-			System.out.println(skd.getSkdDate());
 			cell.setCellStyle(dayOffStyle);
 		}
 	}
@@ -279,8 +278,6 @@ public class ExcelExpoter {
 				currCell = dayOfWeek;
 				// 填入格子 totaltime-8
 				while (totalTime > 0) {
-					System.out.println(currRow);
-					System.out.println(currCell);
 //					if ("休假事項".equals(currentItem.getCategory().getDescription())) {
 //						sheet.getRow(currRow - 1).getCell(currCell).setCellValue("cool");
 //						sheet.getRow(currRow - 1).getCell(currCell).setCellStyle(style2);

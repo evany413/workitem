@@ -29,9 +29,9 @@ spring:
     static-locations: classpath:/static/
   jpa:
     show-sql: false
-    hibernate:
+#    hibernate:
 #      ddl-auto: create
-      ddl-auto: create-drop
+#      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.Oracle10gDialect

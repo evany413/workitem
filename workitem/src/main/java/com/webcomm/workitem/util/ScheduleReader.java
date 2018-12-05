@@ -33,8 +33,6 @@ public class ScheduleReader {
 	
 	public void readSkdFile() throws IOException {
 		List<ScheduleFile> fileList = fileRepo.findByIsActive(false);
-		System.out.println(mapper.writeValueAsString(fileList));
-
 		List<Schedule> scheduleList = new ArrayList<Schedule>();
 		scheduleList = saveToSKDList(fileList);
 		repo.saveAll(scheduleList);
