@@ -70,45 +70,55 @@ public class ExcelExpoter {
 		map.put(12, "十二月");
 	}
 
-	HSSFWorkbook wb = new HSSFWorkbook();
-	// CreationHelper 可以理解為一個工具類，由這個工具類可以獲得 日期格式化的一個例項
-	CreationHelper creationHelper = wb.getCreationHelper();
-
-	/* 假日樣式 */
-	CellStyle dayOffStyle = wb.createCellStyle();
-	/* 工作樣式 */
-	CellStyle style1 = wb.createCellStyle();
-	/* 休假樣式 */
-	CellStyle style2 = wb.createCellStyle();
-	/* 時間格式 */
-	CellStyle timestyle = wb.createCellStyle();
-	// 設定時間樣式
-
 	public HSSFWorkbook exportXLS() {
+
+		HSSFWorkbook wb = new HSSFWorkbook();
+		// CreationHelper 可以理解為一個工具類，由這個工具類可以獲得 日期格式化的一個例項
+		CreationHelper creationHelper = wb.getCreationHelper();
+
+		/* 時間格式 */
+		CellStyle timestyle = wb.createCellStyle();
+
 		timestyle.setDataFormat(creationHelper.createDataFormat().getFormat("yyyy-MM-dd"));
 		HSSFSheet sheet;
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月");
 		long userId = getCookieUserId();
 		List<Item> list = itemService.findAllByPccDeveloper(userId);
 
-		createSKDSheet(); // 第一頁人事行政局行事曆
+		createSKDSheet(wb); // 第一頁人事行政局行事曆
 
+		// 加入work item
 		String tempDate = "";
-		Integer count = 0;
+		Row row = null;
 		for (Item i : list) {
+			Integer count = 0;
 			if (!tempDate.equals(sdf.format(i.getCreateDate()))) {
 				tempDate = sdf.format(i.getCreateDate());
 			}
-			if (wb.getSheet(tempDate) != null) {
-				sheet = wb.getSheet(tempDate);
-				count += 1;
-			} else {
+			if (wb.getSheet(tempDate) == null) {
 				sheet = wb.createSheet(tempDate);
-				count = 0;
+				row = sheet.createRow(count); // 先塞入top row
+				Cell indexCell = row.createCell(0); // 項次
+				Cell userCell = row.createCell(1); // 使用者
+				Cell categoryCell = row.createCell(2); // 分類
+				Cell categoryDetailCell = row.createCell(3); // 分類細項
+				Cell contentCell = row.createCell(4); // 工作內容
+				Cell workTimeCell = row.createCell(5); // 時數
+				Cell dateCell = row.createCell(6); // 建立日期
+				indexCell.setCellValue("項次");
+				userCell.setCellValue("使用者");
+				contentCell.setCellValue("工作內容");
+				categoryCell.setCellValue("分類");
+				categoryDetailCell.setCellValue("分類細項");
+				workTimeCell.setCellValue("時數");
+				dateCell.setCellValue("建立日期");
+			} else {
+				sheet = wb.getSheet(tempDate);
 			}
+			count = sheet.getPhysicalNumberOfRows();// 取得最後一個row的位置，假設目前只有一行，回傳1
+			row = sheet.createRow(count); // 先塞入top row
+			System.out.println("*****" + count);
 
-			// 建立行（從0開始）
-			Row row = sheet.createRow(count);
 			// 建立單元格(第一列)
 			Cell indexCell = row.createCell(0); // 項次
 			Cell userCell = row.createCell(1); // 使用者
@@ -119,30 +129,27 @@ public class ExcelExpoter {
 			Cell dateCell = row.createCell(6); // 建立日期
 
 			// 給單元格賦值
-			if (count == 0) {
-				indexCell.setCellValue("項次");
-				userCell.setCellValue("使用者");
-				contentCell.setCellValue("工作內容");
-				categoryCell.setCellValue("分類");
-				categoryDetailCell.setCellValue("分類細項");
-				workTimeCell.setCellValue("時數");
-				dateCell.setCellValue("建立日期");
-			} else {
-				indexCell.setCellValue(count);
-				userCell.setCellValue(i.getPccDeveloper().getName());
-				categoryCell.setCellValue(i.getCategoryDetail().getCategory().getDescription());
-				categoryDetailCell.setCellValue(i.getCategoryDetail().getDescription());
-				contentCell.setCellValue(i.getContent());
-				workTimeCell.setCellValue(i.getWorkTime());
-				dateCell.setCellValue(i.getCreateDate());
-				dateCell.setCellStyle(timestyle);
-			}
+			indexCell.setCellValue(count);
+			userCell.setCellValue(i.getPccDeveloper().getName());
+			categoryCell.setCellValue(i.getCategoryDetail().getCategory().getDescription());
+			categoryDetailCell.setCellValue(i.getCategoryDetail().getDescription());
+			contentCell.setCellValue(i.getContent());
+			workTimeCell.setCellValue(i.getWorkTime().doubleValue());
+			dateCell.setCellValue(i.getCreateDate());
+			dateCell.setCellStyle(timestyle);
+//			}
 
 		}
 		return wb;
 	}
 
-	public void createSKDSheet() {
+	public void createSKDSheet(HSSFWorkbook wb) {
+		/* 假日樣式 */
+		CellStyle dayOffStyle = wb.createCellStyle();
+		/* 工作樣式 */
+		CellStyle style1 = wb.createCellStyle();
+		/* 休假樣式 */
+		CellStyle style2 = wb.createCellStyle();
 		Calendar calendar = Calendar.getInstance();
 		long userId = getCookieUserId();
 		Date startDate = itemService.getStartDateByPccDeveloper(userId); // work item 起始日期
@@ -196,7 +203,7 @@ public class ExcelExpoter {
 
 			// 設定 月、星期
 			if (currentC.get(Calendar.DATE) <= lastC.get(Calendar.DATE)) {
-				currentRow = setHeadRow(sheet, currentRow, currentC.get(Calendar.MONTH) + 1);
+				currentRow = setHeadRow(style1, style2, sheet, currentRow, currentC.get(Calendar.MONTH) + 1);
 			}
 
 			Row r;// 設定行
@@ -207,7 +214,7 @@ public class ExcelExpoter {
 			}
 			Cell c = r.createCell(count % 7); // 設定列
 			c.setCellValue(currentC.get(Calendar.DATE) + (null == s.getNote() ? "" : s.getNote()));
-			fillColor(s, c);
+			fillColor(dayOffStyle, s, c);
 			count++;
 			if (count % 7 == 0)
 				currentRow++;
@@ -223,7 +230,7 @@ public class ExcelExpoter {
 	 * @param skd
 	 * @param cell
 	 */
-	public void fillColor(Schedule skd, Cell cell) {
+	public void fillColor(CellStyle dayOffStyle, Schedule skd, Cell cell) {
 
 		dayOffStyle.setFillForegroundColor(IndexedColors.PINK.getIndex()); // 前景色
 		dayOffStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -239,7 +246,7 @@ public class ExcelExpoter {
 	 * @param item
 	 * @param cell
 	 */
-	public void fillColor(HSSFSheet sheet) {
+	public void fillColor(CellStyle style1, CellStyle style2, HSSFSheet sheet) {
 
 		/* 工作樣式 */
 		style1.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex()); // 前景色
@@ -251,7 +258,7 @@ public class ExcelExpoter {
 
 		Calendar calendar = Calendar.getInstance();
 		List<Item> itemList = itemService.findAllAsc();
-		int totalTime = 0;
+		double totalTime = 0.0;
 		Date currentDate = null;
 		Set<String> workSet = new HashSet<String>();
 		Item firstItem = null; // WI的起頭
@@ -296,7 +303,7 @@ public class ExcelExpoter {
 				totalTime = 0;// 重置workitem時間
 			} else {
 //				workSet.add(currentItem.getCategory().getDescription());
-				totalTime += currentItem.getWorkTime();
+				totalTime += currentItem.getWorkTime().doubleValue();
 			}
 
 		}
@@ -311,7 +318,7 @@ public class ExcelExpoter {
 	 * @param month 月份
 	 * @return
 	 */
-	public Integer setHeadRow(HSSFSheet sheet, int rnum, int month) {
+	public Integer setHeadRow(CellStyle style1, CellStyle style2, HSSFSheet sheet, int rnum, int month) {
 
 		/* 工作樣式 */
 		style1.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex()); // 前景色

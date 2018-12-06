@@ -1,5 +1,6 @@
 package com.webcomm.workitem.service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface ItemService {
 
 	public Date getStartDate();
 
-	public Integer getWorkHours();
+	public BigDecimal getWorkHours();
 
 	public void delete(Item item);
 
@@ -34,18 +35,18 @@ public interface ItemService {
 	public Date getStartDateByPccDeveloper(PccDeveloper selectedPccDeveloper);
 
 	public Date getLastDateByPccDeveloper(PccDeveloper selectedPccDeveloper);
-	
+
 	public Date getStartDateByPccDeveloper(long userId);
-	
+
 	public Date getLastDateByPccDeveloper(long userId);
 
-	public Integer getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper);
+	public BigDecimal getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper);
 
 	public List<Item> findAllByPccDeveloper(PccDeveloper selectedPccDeveloper);
-	
+
 	public List<Item> findAllByPccDeveloper(long userId);
 
-	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date);
+	public BigDecimal getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date);
 
 	public void deleteById(long pkItem);
 

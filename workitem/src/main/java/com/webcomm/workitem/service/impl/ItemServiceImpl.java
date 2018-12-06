@@ -1,5 +1,6 @@
 package com.webcomm.workitem.service.impl;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -8,8 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.webcomm.workitem.model.PccDeveloper;
 import com.webcomm.workitem.model.Item;
+import com.webcomm.workitem.model.PccDeveloper;
 import com.webcomm.workitem.repository.ItemRepository;
 import com.webcomm.workitem.service.ItemService;
 
@@ -60,11 +61,11 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public Integer getWorkHours() {
-		Integer total = 0;
+	public BigDecimal getWorkHours() {
+		BigDecimal total = new BigDecimal(0.0);
 		List<Item> list = repo.findAll();
 		for (Item item : list) {
-			total += item.getWorkTime();
+			total = total.add(item.getWorkTime());
 		}
 		return total;
 	}
@@ -131,11 +132,11 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public Integer getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper) {
-		Integer total = 0;
+	public BigDecimal getPccDeveloperWorkHours(PccDeveloper selectedPccDeveloper) {
+		BigDecimal total = new BigDecimal(0.0);
 		List<Item> list = repo.findByPccDeveloper(selectedPccDeveloper);
 		for (Item item : list) {
-			total += item.getWorkTime();
+			total = total.add(item.getWorkTime());
 		}
 		return total;
 	}
@@ -147,11 +148,11 @@ public class ItemServiceImpl implements ItemService {
 	}
 
 	@Override
-	public Integer getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date) {
-		Integer total = 0;
+	public BigDecimal getPccDeveloperWorkHoursAfter(PccDeveloper selectedPccDeveloper, Date date) {
+		BigDecimal total = new BigDecimal(0.0);
 		List<Item> list = repo.findByPccDeveloperAndCreateDateAfter(selectedPccDeveloper, date);
 		for (Item item : list) {
-			total += item.getWorkTime();
+			total = total.add(item.getWorkTime());
 		}
 		return total;
 	}
@@ -164,7 +165,7 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public List<Item> findAllByPccDeveloper(long userId) {
-		return repo.findByPccDeveloper_PkPccDeveloper(userId);
+		return repo.findByPccDeveloper_PkPccDeveloperOrderByCreateDateAsc(userId);
 	}
 
 	@Override

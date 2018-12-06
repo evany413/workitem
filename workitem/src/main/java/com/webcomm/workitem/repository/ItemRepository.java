@@ -32,4 +32,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
 	public Item findFirstByPccDeveloper_PkPccDeveloperOrderByCreateDateDesc(long userId);
 
+	public List<Item> findByPccDeveloper_PkPccDeveloperOrderByCreateDateAsc(long userId);
+
 }

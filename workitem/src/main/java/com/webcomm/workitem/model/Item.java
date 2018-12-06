@@ -1,18 +1,16 @@
 package com.webcomm.workitem.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -42,8 +40,8 @@ public class Item implements Serializable {
 	/* 工作時數 */
 	@NotNull(message = "工作時數不可為空")
 	@Range(min = 0, max = 999, message = "工作時數範圍必須界於0-999")
-	@Column(name = "WORK_TIME", length = 100)
-	private Integer workTime;
+	@Column(name = "WORK_TIME", precision = 10, scale = 2)
+	private BigDecimal workTime;
 
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
@@ -83,11 +81,11 @@ public class Item implements Serializable {
 		this.content = content;
 	}
 
-	public Integer getWorkTime() {
+	public BigDecimal getWorkTime() {
 		return workTime;
 	}
 
-	public void setWorkTime(Integer workTime) {
+	public void setWorkTime(BigDecimal workTime) {
 		this.workTime = workTime;
 	}
 

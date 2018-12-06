@@ -3,6 +3,7 @@ package com.webcomm.workitem.controller;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,11 +103,11 @@ public class WorkItemController {
 		/* calculate WI time */
 		Date startDate = itemService.getStartDateByPccDeveloper(selectedPccDeveloper);
 		Date lastDate = itemService.getLastDateByPccDeveloper(selectedPccDeveloper);
-		Integer workHours = scheduleService.getWorkDayCount(startDate, new Date()) * 8; // from first work item date till now
-		Integer hoursFinish = itemService.getPccDeveloperWorkHoursAfter(selectedPccDeveloper, DateUtil.getNextDay(startDate)); // 第一次填的隔天起算，第一次填的時間可不計。
-		Integer hourLeft = workHours - hoursFinish; // 所有工作天時數 - WI完成時數
-		if (workHours == 0) {// 代表目前還沒填過WI
-			hourLeft = 0;
+		BigDecimal workHours = new BigDecimal(Double.toString(scheduleService.getWorkDayCount(startDate, new Date()) * 8)); // from first work item date till now
+		BigDecimal hoursFinish = itemService.getPccDeveloperWorkHoursAfter(selectedPccDeveloper, DateUtil.getNextDay(startDate)); // 第一次填的隔天起算，第一次填的時間可不計。
+		BigDecimal hourLeft = workHours.subtract(hoursFinish); // 所有工作天時數 - WI完成時數
+		if (workHours.equals(new BigDecimal(0.0))) {// 代表目前還沒填過WI
+			hourLeft = new BigDecimal(0.0);
 		}
 
 		model.addAttribute("selectedPccDeveloper", selectedPccDeveloper);
@@ -348,7 +349,7 @@ public class WorkItemController {
 		return "redirect:/pccDeveloperList";
 	}
 
-	/* 下載檔案 */
+	/* 下載Excel檔案 */
 	@RequestMapping("/downLoadFile")
 	public void downloadFile(HttpServletResponse response) {
 		String filename = "workitem.xls";
