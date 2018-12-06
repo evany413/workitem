@@ -39,7 +39,7 @@
 			window.location.href = "/";
 		});
 
-		setCategoryDetail();
+		setCategoryDetail(); //進入畫面先設定category與categoryDetail的選項
 		$("#categoryDetail\\.category").change(function() {
 			setCategoryDetail();
 		});
@@ -83,7 +83,7 @@
 	/* 當編輯待辦事項時，設定待辦事項細項 */
 	function setEditCategoryDetail(e) {
 		var curTr = $(e).parent().parent();
-		var selectedCText = $(e).find("option:selected").text();
+		var selectedCText = curTr.find(".editCategory option:selected").text();
 		curTr.find(".editCategoryDetail > option").hide();
 		curTr.find(".editCategoryDetail > option").filter(function() {
 			return $(this).attr("class") == selectedCText
@@ -104,6 +104,7 @@
 		var editRow = $(e).parent().parent();
 		editRow.find(".itemEditView").show();
 		editRow.find(".itemListView").hide();
+		setEditCategoryDetail(e);
 	}
 
 	function deleteItem(e) {
@@ -266,19 +267,30 @@
 								<td class="itemListView" th:text="${item.categoryDetail.description}"></td>
 								<td class="itemListView" th:text="${item.content}"></td>
 								<td class="itemListView" th:text="${item.workTime}"></td>
-								<td class="itemEditView" style="display: none"><select class="form-control editPccDeveloper">
+								<td class="itemEditView" style="display: none">
+									<select class="form-control editPccDeveloper">
 										<option th:each="pccDeveloper:${pccDeveloperList}" th:value="${pccDeveloper.pkPccDeveloper}" th:text="${pccDeveloper.name}" th:selected="${pccDeveloper}==${item.pccDeveloper}"></option>
-									</select></td>
-								<td class="itemEditView" style="display: none"><select class="form-control editCategory">
+									</select>
+								</td>
+								<td class="itemEditView" style="display: none">
+									<select class="form-control editCategory">
 										<option th:each="category:${categoryAllList}" th:value="${category.pkCategory}" th:text="${category.description}" th:selected="${category}==${item.categoryDetail.category}">...</option>
-									</select></td>
-								<td class="itemEditView" style="display: none"><select class="form-control editCategoryDetail">
+									</select>
+								</td>
+								<td class="itemEditView" style="display: none">
+									<select class="form-control editCategoryDetail">
 										<option th:each="categoryDetail:${categoryDetailAllList}" th:classappend="${categoryDetail.category.description}" th:value="${categoryDetail.pkCategoryDetail}" th:text="${categoryDetail.description}" th:selected="${categoryDetail}==${item.categoryDetail}">...</option>
-									</select></td>
-								<td class="itemEditView" style="display: none"><input class="editContent" th:value="${item.content}"></td>
-								<td class="itemEditView" style="display: none"><input class="editWorkTime" th:value="${item.workTime}"></td>
+									</select>
+								</td>
+								<td class="itemEditView" style="display: none">
+									<input class="editContent" th:value="${item.content}">
+								</td>
+								<td class="itemEditView" style="display: none">
+									<input class="editWorkTime" th:value="${item.workTime}">
+								</td>
 								<td th:text="${#dates.format(item.createDate, 'yyyy-MM-dd')}"></td>
-								<td><input class="editPkItem" th:value="${item.pkItem}" style="display: none" readonly>
+								<td>
+									<input class="editPkItem" th:value="${item.pkItem}" style="display: none" readonly>
 									<button class="itemListView" type="button" onclick="showItemEditView(this)">
 										<i class="fa fa-edit"></i>
 									</button>
@@ -290,7 +302,8 @@
 									</button>
 									<button class="itemEditView" type="button" onclick="cancelItemEdit(this)" style="display: none">
 										<i class="fa fa-times-circle" style="color: red"></i>
-									</button></td>
+									</button>
+								</td>
 							</tr>
 						</tbody>
 						<!-- /.table-responsive -->
