@@ -2,7 +2,6 @@ package com.webcomm.workitem.controller;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -17,11 +16,6 @@ import javax.validation.Valid;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -278,7 +272,8 @@ public class WorkItemController {
 			return goCategoryList(new Category(), new CategoryDetail(), model);
 		}
 		Category updateCategory = categoryService.getOne(pkCategory);
-		BeanUtils.copyProperties(category, updateCategory);
+		updateCategory.setDescription(category.getDescription());
+//		BeanUtils.copyProperties(category, updateCategory);
 		categoryService.update(updateCategory);
 		return "redirect:/categoryList";
 	}
@@ -297,7 +292,9 @@ public class WorkItemController {
 			return goCategoryList(new Category(), new CategoryDetail(), model);
 		}
 		CategoryDetail updateCategoryDetail = categoryDetailService.getOne(pkCategoryDetail);
-		BeanUtils.copyProperties(categoryDetail, updateCategoryDetail);
+		updateCategoryDetail.setDescription(categoryDetail.getDescription());
+		updateCategoryDetail.setCategory(categoryDetail.getCategory());
+//		BeanUtils.copyProperties(categoryDetail, updateCategoryDetail);
 		categoryDetailService.update(updateCategoryDetail);
 		return "redirect:/categoryList";
 	}

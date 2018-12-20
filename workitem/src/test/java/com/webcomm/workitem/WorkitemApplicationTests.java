@@ -14,7 +14,7 @@ public class WorkitemApplicationTests {
 
 	@Test
 	public void contextLoads() {
-
+		System.out.println("hi");
 	}
 
 	public void describe(Object obj) {
