@@ -237,7 +237,7 @@
 							</div>
 							<div class="row">
 								<div class="form-group col-lg-6">
-									上次開工作項目的時間是：<span th:text="${#dates.format(lastDate, 'yyyy-MM-dd')}"></span> 今天是：<span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></span> <br> 還剩下<span style="color: red" th:text="${hourLeft}"></span>個小時要填 <span style="color: green; font-size: 9px">&nbsp;&nbsp;*如有休假只需填入時數即可</span>
+									上次開工作項目的時間是：<span th:text="${#dates.format(lastDate, 'yyyy-MM-dd')}"></span> 今天是：<span th:text="${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></span> <br> 還剩下<span style="color: red" th:text="${hourLeft}"></span>個小時要填 <span style="color: green;">&nbsp;&nbsp;*如有休假只需填入時數即可</span>
 								</div>
 								<div class="form-group col-lg-6 text-right">
 									<!-- 									<button type="button" id="setUserBtn" class="btn btn-info">設定使用者</button> -->
