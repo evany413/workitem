@@ -4,13 +4,13 @@ server:
     uri-encoding: UTF-8
 spring:
   datasource:
-    driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@192.135.8.190:1521:topsd
-    username: geps
-    password: passw0rd
-#    url: jdbc:oracle:thin:@localhost:1521:xe
-#    username: evan
-#    password: 123
+    driver-class-name: oracle.jdbc.OracleDriver
+    #url: jdbc:oracle:thin:@192.135.8.190:1521:topsd
+    #username: geps
+    #password: passw0rd
+    url: jdbc:oracle:thin:@localhost:1521:xe
+    username: evan
+    password: 123
     #schema: classpath:schema.sql
     #data: classpath:data.sql
   http:
